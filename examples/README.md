@@ -1,12 +1,12 @@
 # ZK-regex + Noir example
 
-In this document, we will present an example of how to use the zk-regex project to generate Noir code that proves that an input string satisfies given public regex public regex.
+In this document, we will present an example of how to use the [zk-regex](https://github.com/zkemail/zk-regex) project to generate [Noir](https://noir-lang.org/) code that proves that an input string satisfies given public regex public regex.
 
 ## Requirements:
 
 To follow this example, you should have the following tools installed in your system:
-- zk-regex. To install this, follow the instructions presented in the documentation.
-- Noir. You can install this using the installation instructions.
+- zk-regex. To install this, follow the instructions presented in the [documentation](https://github.com/zkemail/zk-regex?tab=readme-ov-file#install).
+- Noir. You can install this using the [installation instructions](https://noir-lang.org/docs/getting_started/installation/).
 
 ## Generating the Noir circuit automatically
 Let us suppose that you want to prove that an input string fulfills the regex `m(a|b)+-(c|d)+e` in your own project. First, you need to create your own project using the command
