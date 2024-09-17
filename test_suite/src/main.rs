@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     info!("Compilation success for regex {}", regex.as_str());
                 }
             }
-            Err(err) => error!("error generating the code: {}", err),
+            Err(err) => error!("error generating the code: {:?}", err),
         }
     }
 
