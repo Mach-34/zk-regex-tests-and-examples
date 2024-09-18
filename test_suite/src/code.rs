@@ -2,7 +2,7 @@ use std::{fmt::Display, fs, io, path::Path, process::Command, string::FromUtf8Er
 
 use regex::Regex;
 
-const DEFAULT_GENERATION_PATH: &str = "./noir_code.nr";
+use crate::{constants, db::RegexInput};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -19,25 +19,49 @@ pub enum Error {
 pub struct Code {
     noir_code: String,
     input_size: usize,
+    test_case: Option<String>,
 }
 
 impl Code {
-    pub fn new(regex: Regex, input_size: usize) -> Result<Self, Error> {
-        let noir_code = generate_noir_code(regex, Path::new(DEFAULT_GENERATION_PATH))?;
+    pub fn new(regex_input: &RegexInput) -> Result<Self, Error> {
+        let noir_code = generate_noir_code(
+            regex_input.regex.clone(),
+            Path::new(constants::DEFAULT_GENERATION_PATH),
+        )?;
         Ok(Self {
             noir_code,
-            input_size,
+            input_size: regex_input.input_size,
+            test_case: None,
         })
+    }
+
+    pub fn set_test_case(&mut self, test_case: &str) {
+        self.test_case = Some(String::from(test_case));
+    }
+
+    pub fn write_to_path(&self, path: &Path) {
+        fs::write(path, self.to_string()).expect("the file should be written successfully");
     }
 }
 
 impl Display for Code {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}",
-            self.noir_code, self.input_size,
-        )
+        match &self.test_case {
+            Some(test_case) => {
+                write!(
+                    f,
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
+                    self.noir_code, self.input_size, test_case.as_bytes()
+                )
+            }
+            None => {
+                write!(
+                    f,
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}",
+                    self.noir_code, self.input_size,
+                )
+            }
+        }
     }
 }
 

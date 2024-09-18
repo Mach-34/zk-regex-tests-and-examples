@@ -1,43 +1,73 @@
 mod code;
 mod compiler;
+mod constants;
 mod db;
+mod tester;
 
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
 use std::{error::Error, path::Path};
-
-const DEFAULT_DATABASE_PATH: &str = "./regex_db.txt";
+use tester::test_regex;
 
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
 
-    info!("Starting regex tests");
+    info!("starting regex tests");
 
     // Reads the database
-    let database = RegexDb::load_from_file(Path::new(DEFAULT_DATABASE_PATH)).map_err(|err| {
-        error!("error creating the database: {}", err);
-        err
-    })?;
+    let database =
+        RegexDb::load_from_file(Path::new(constants::DEFAULT_DATABASE_PATH)).map_err(|err| {
+            error!("error creating the database: {}", err);
+            err
+        })?;
 
-    for (regex, input_size) in database {
-        info!("Testing regex {}", regex.as_str());
-        let code_read_result = Code::new(regex.clone(), input_size);
-        match code_read_result {
+    for regex_input in database {
+        info!("testing regex {}", regex_input.regex.as_str());
+        let mut code_read_result = Code::new(&regex_input);
+        match &mut code_read_result {
             Ok(code) => {
-                let _ = compiler::write_code_to_project(code).map_err(|err| {
-                    error!("error writing the code into the noir project: {err}");
-                    err
-                });
-                let compilation_result = compiler::compile_noir_project().map_err(|err| {
-                    error!("error compiling the noir project: {err}");
-                    err
-                });
-                if compilation_result.is_ok() {
-                    info!("Compilation success for regex {}", regex.as_str());
+                let _ = code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE));
+                let compilation_result = compiler::compile_noir_project();
+                match compilation_result {
+                    Ok(_) => info!(
+                        "compilation success for regex {}",
+                        regex_input.regex.as_str()
+                    ),
+                    Err(e) => {
+                        error!(
+                            "error compiling the noir project for regex {}: {:?}",
+                            regex_input.regex.as_str(),
+                            e
+                        );
+                        continue;
+                    }
+                }
+                match test_regex(&regex_input, code) {
+                    Ok(successfull_samples) => {
+                        info!(
+                            "sucess on checking {} samples for regex {}",
+                            successfull_samples,
+                            regex_input.regex.as_str()
+                        );
+                    }
+                    Err(tester::Error::TestFailed(string_fail)) => {
+                        error!(
+                            "test failed for string {} for regex {}",
+                            string_fail, regex_input.regex
+                        )
+                    }
+                    Err(e) => {
+                        error!("error testing the regex {}: {:?}", regex_input.regex, e)
+                    }
                 }
             }
-            Err(err) => error!("error generating the code: {:?}", err),
+            Err(code::Error::CodeGenerationFailed(console_msg)) => {
+                error!("error generating the code: \n{}", console_msg);
+            }
+            Err(err) => {
+                error!("error generating the code: {:?}", err);
+            }
         }
     }
 

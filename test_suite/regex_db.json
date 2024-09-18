@@ -1,0 +1,37 @@
+{
+    "database": [
+        {
+            "type": "raw",
+            "regex": "m(a|b)+-(c|d)+e$",
+            "input_size": 16,
+            "samples_pass": [
+                "ababababab",
+                "aaaavvvaaabba"
+            ],
+            "samples_fail": [
+                "sdjfalsdjflasjf",
+                "slafjñsajdflasjd"
+            ]
+        },
+        {
+            "regex": "m(a|b)+-(c|d)+e$",
+            "input_size": 16
+        },
+        {
+            "regex": ".*dog$",
+            "input_size": 16
+        },
+        {
+            "regex": "[a-z]+",
+            "input_size": 16
+        },
+        {
+            "regex": "dog[a-z]+",
+            "input_size": 16
+        },
+        {
+            "regex": "[a-z]+dog",
+            "input_size": 16
+        }
+    ]
+}
