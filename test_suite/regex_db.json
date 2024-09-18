@@ -1,7 +1,7 @@
 {
     "database": [
         {
-            "type": "raw",
+            "format": "raw",
             "regex": "m(a|b)+-(c|d)+e$",
             "input_size": 16,
             "samples_pass": [
