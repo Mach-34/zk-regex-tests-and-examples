@@ -25,6 +25,7 @@
                 "slafjñsajdflasjd"
             ]
         }
+    ]
 }
 ```
 ### Execute tests
