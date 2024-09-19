@@ -51,23 +51,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                             regex_input.regex.as_str()
                         );
                     }
-                    Err(tester::Error::TestFailed(string_fail)) => {
-                        error!(
-                            "test failed for string {} for regex {}",
-                            string_fail, regex_input.regex
-                        )
-                    }
-                    Err(e) => {
-                        error!("error testing the regex {}: {:?}", regex_input.regex, e)
-                    }
+                    Err(err) => match err.downcast_ref() {
+                        Some(tester::Error::TestFailed(string_fail)) => {
+                            error!(
+                                "test failed for string {} for regex {}",
+                                string_fail, regex_input.regex
+                            )
+                        }
+                        Some(e) => {
+                            error!("error generating the code: {:?}", e);
+                        }
+                        None => error!("error downcasting the anyhow::Error"),
+                    },
                 }
             }
-            Err(code::Error::CodeGenerationFailed(console_msg)) => {
-                error!("error generating the code: \n{}", console_msg);
-            }
-            Err(err) => {
-                error!("error generating the code: {:?}", err);
-            }
+            Err(err) => match err.downcast_ref() {
+                Some(code::Error::CodeGenerationFailed(console_msg)) => {
+                    error!("error generating the code: \n{}", console_msg);
+                }
+                None => error!("error downcasting the anyhow::Error"),
+            },
         }
     }
 

@@ -13,7 +13,7 @@ pub enum Error {
     WrongGeneratorConstruction(rand_regex::Error),
 }
 
-pub fn test_regex(regex_input: &RegexInput, code: &mut Code) -> Result<usize, Error> {
+pub fn test_regex(regex_input: &RegexInput, code: &mut Code) -> anyhow::Result<usize> {
     // Generate the random strings
     let str_generator = Regex::compile(regex_input.regex.as_str(), regex_input.input_size as u32)
         .map_err(Error::WrongGeneratorConstruction)?;
@@ -26,13 +26,13 @@ pub fn test_regex(regex_input: &RegexInput, code: &mut Code) -> Result<usize, Er
     for string in &samples {
         // Set the testcase the current sample and write the main file.
         code.set_test_case(string);
-        code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE));
+        code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE))?;
         let test_result = test_noir_code();
 
         let ground_truth_verification =
             check_with_ground_truth(string, regex_input.regex.as_str(), test_result);
         if !ground_truth_verification {
-            return Err(Error::TestFailed(string.clone()));
+            anyhow::bail!(Error::TestFailed(string.clone()));
         }
     }
 
@@ -45,7 +45,7 @@ fn test_noir_code() -> bool {
         .current_dir(constants::DEFAULT_PROJECT_PATH)
         .output()
         .expect("the test command should be executed to get the test result");
-    return output.status.success();
+    output.status.success()
 }
 
 fn check_with_ground_truth(string: &str, regex: &str, noir_result: bool) -> bool {

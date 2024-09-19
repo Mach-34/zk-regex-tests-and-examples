@@ -1,19 +1,13 @@
-use std::{fmt::Display, fs, io, path::Path, process::Command, string::FromUtf8Error};
+use std::{fmt::Display, fs, path::Path, process::Command};
 
-use regex::Regex;
+use anyhow::Context;
 
 use crate::{constants, db::RegexInput};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("error executing the generation command: {0:?}")]
-    CommandExecutionFailed(io::Error),
-    #[error("error reading the generated code from the Noir file: {0:?}")]
-    FailedReadGeneratedCode(io::Error),
     #[error("error generating the code from the regex")]
     CodeGenerationFailed(String),
-    #[error("error converting the output of the command to string")]
-    IncorrectOutputConversion(FromUtf8Error),
 }
 
 pub struct Code {
@@ -23,11 +17,12 @@ pub struct Code {
 }
 
 impl Code {
-    pub fn new(regex_input: &RegexInput) -> Result<Self, Error> {
+    pub fn new(regex_input: &RegexInput) -> anyhow::Result<Self> {
         let noir_code = generate_noir_code(
-            regex_input.regex.clone(),
+            &regex_input.regex,
             Path::new(constants::DEFAULT_GENERATION_PATH),
-        )?;
+        )
+        .context("error generating the noir code")?;
         Ok(Self {
             noir_code,
             input_size: regex_input.input_size,
@@ -39,8 +34,9 @@ impl Code {
         self.test_case = Some(String::from(test_case));
     }
 
-    pub fn write_to_path(&self, path: &Path) {
-        fs::write(path, self.to_string()).expect("the file should be written successfully");
+    pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
+        fs::write(path, self.to_string())?;
+        Ok(())
     }
 }
 
@@ -65,24 +61,24 @@ impl Display for Code {
     }
 }
 
-fn generate_noir_code(regex: Regex, result_path: &Path) -> Result<String, Error> {
+fn generate_noir_code(regex: &str, result_path: &Path) -> anyhow::Result<String> {
     let output = Command::new("zk-regex")
         .args(["raw", "--raw-regex"])
-        .arg(regex.as_str())
+        .arg(regex)
         .arg("--noir-file-path")
         .arg(result_path)
         .output()
-        .map_err(Error::CommandExecutionFailed)?;
+        .context("error executing the noir generation command")?;
 
     if !output.status.success() {
-        return Err(Error::CodeGenerationFailed(
-            String::from_utf8(output.stderr).map_err(Error::IncorrectOutputConversion)?,
-        ));
+        anyhow::bail!(Error::CodeGenerationFailed(String::from_utf8(
+            output.stderr
+        )?));
     }
 
     // Load code from stored file.
     let noir_generated_code =
-        fs::read_to_string(result_path).map_err(Error::FailedReadGeneratedCode)?;
+        fs::read_to_string(result_path).context("error writing the noir code into the file")?;
 
     Ok(noir_generated_code)
 }

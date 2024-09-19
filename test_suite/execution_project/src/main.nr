@@ -378,4 +378,4 @@ comptime fn make_lookup_table() -> [Field; 1280] {
 fn main(input: [u8; 16]) { regex_match(input); }
 
 #[test]
-fn test() { let input = [109, 100, 109, 101, 99, 100, 111, 103]; regex_match(input); }
+fn test() { let input = [121, 115, 100, 111, 103]; regex_match(input); }

@@ -1,29 +1,36 @@
-use std::{fs, io, path::Path};
+use std::{fs, path::Path};
 
-use regex::Regex;
+use anyhow::Context;
+use serde::Deserialize;
 use serde_json::Value;
-
-/// Errors for the regex database.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("error parsing the regex: {0:?}")]
-    IncorrectParseRegex(regex::Error),
-    #[error("error reading the regex from file: {0:?}")]
-    FailedFileRead(io::Error),
-}
 
 /// Database of regular expressions that will be tested.
 pub struct RegexDb(Vec<RegexInput>);
 
+#[derive(Deserialize)]
 pub struct RegexInput {
-    pub regex: Regex,
+    pub regex: String,
     pub input_size: usize,
+    pub format: String,
+    pub samples_pass: Vec<String>,
+    pub samples_fail: Vec<String>,
 }
 
 impl RegexInput {
-    pub fn new(regex_str: &str, input_size: usize) -> Result<Self, Error> {
-        let regex = Regex::new(regex_str).map_err(Error::IncorrectParseRegex)?;
-        Ok(Self { regex, input_size })
+    pub fn new(
+        regex_str: &str,
+        format: String,
+        input_size: usize,
+        samples_pass: Vec<String>,
+        samples_fail: Vec<String>,
+    ) -> Self {
+        Self {
+            regex: String::from(regex_str),
+            input_size,
+            format,
+            samples_pass,
+            samples_fail,
+        }
     }
 }
 
@@ -34,26 +41,18 @@ impl RegexDb {
     ///     - Regex2
     ///     - InputSize2
     ///     - ...
-    pub fn load_from_file(file_path: &Path) -> Result<Self, Error> {
-        let file_regex_content = fs::read_to_string(file_path).map_err(Error::FailedFileRead)?;
+    pub fn load_from_file(file_path: &Path) -> anyhow::Result<Self> {
+        let file_regex_content =
+            fs::read_to_string(file_path).context("error reading the regex content")?;
         let json_value: Value =
-            serde_json::from_str(&file_regex_content).expect("failed while parsing the JSON file");
-        let pairs = json_value["database"]
-            .as_array()
-            .expect("failed while parsing the array of regexes");
+            serde_json::from_str(&file_regex_content).context("error parsing the json")?;
+        let regex_db: Vec<RegexInput> = serde_json::from_str(&json_value["database"].to_string())
+            .context("error parsing the database array")?;
 
         let mut regexes = Vec::new();
 
-        for pair in pairs {
-            let regex = pair["regex"]
-                .as_str()
-                .expect("failed while reading the regex from the database");
-            let input_size: usize = pair["input_size"]
-                .as_u64()
-                .expect("failed while reading the input size from the database")
-                as usize;
-
-            regexes.push(RegexInput::new(regex, input_size)?);
+        for db_element in regex_db {
+            regexes.push(db_element);
         }
 
         Ok(Self(regexes))
