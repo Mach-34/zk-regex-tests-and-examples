@@ -1,19 +1,22 @@
-use std::{fmt::Display, fs, io, path::Path, process::Command, string::FromUtf8Error};
+use std::{
+    fmt::Display,
+    fs::{self, File},
+    io::{BufWriter, Write},
+    path::Path,
+    process::Command,
+};
 
-use regex::Regex;
+use anyhow::Context;
 
-use crate::{constants, db::RegexInput};
+use crate::{
+    constants::{self, DEFAULT_DECOMPOSED_JSON_FILE},
+    db::{ComponentsWrapper, DbEntry, RegexInput},
+};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("error executing the generation command: {0:?}")]
-    CommandExecutionFailed(io::Error),
-    #[error("error reading the generated code from the Noir file: {0:?}")]
-    FailedReadGeneratedCode(io::Error),
     #[error("error generating the code from the regex")]
     CodeGenerationFailed(String),
-    #[error("error converting the output of the command to string")]
-    IncorrectOutputConversion(FromUtf8Error),
 }
 
 pub struct Code {
@@ -23,11 +26,12 @@ pub struct Code {
 }
 
 impl Code {
-    pub fn new(regex_input: &RegexInput) -> Result<Self, Error> {
+    pub fn new(regex_input: &DbEntry) -> anyhow::Result<Self> {
         let noir_code = generate_noir_code(
-            regex_input.regex.clone(),
+            &regex_input.regex,
             Path::new(constants::DEFAULT_GENERATION_PATH),
-        )?;
+        )
+        .context("error generating the noir code")?;
         Ok(Self {
             noir_code,
             input_size: regex_input.input_size,
@@ -39,8 +43,10 @@ impl Code {
         self.test_case = Some(String::from(test_case));
     }
 
-    pub fn write_to_path(&self, path: &Path) {
-        fs::write(path, self.to_string()).expect("the file should be written successfully");
+    pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
+        fs::write(path, self.to_string())
+            .context(format!("error writing the code to the path {:?}", path))?;
+        Ok(())
     }
 }
 
@@ -50,8 +56,11 @@ impl Display for Code {
             Some(test_case) => {
                 write!(
                     f,
-                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
-                    self.noir_code, self.input_size, test_case.as_bytes()
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}
+                    \n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
+                    self.noir_code,
+                    self.input_size,
+                    test_case.as_bytes()
                 )
             }
             None => {
@@ -65,24 +74,45 @@ impl Display for Code {
     }
 }
 
-fn generate_noir_code(regex: Regex, result_path: &Path) -> Result<String, Error> {
-    let output = Command::new("zk-regex")
-        .args(["raw", "--raw-regex"])
-        .arg(regex.as_str())
+fn generate_noir_code(regex: &RegexInput, result_path: &Path) -> anyhow::Result<String> {
+    let mut command = Command::new("zk-regex");
+    match regex {
+        RegexInput::Raw(regex_str) => {
+            command.args(["raw", "--raw-regex"]).arg(regex_str);
+        }
+        RegexInput::Decomposed(parts) => {
+            // Write the parts to the JSON file
+            let json_file = File::create(DEFAULT_DECOMPOSED_JSON_FILE)?;
+            let mut writer = BufWriter::new(json_file);
+            serde_json::to_writer(&mut writer, &ComponentsWrapper::new(parts.to_vec()))
+                .context("error writing the parts of the decomposed regex")?;
+            writer
+                .flush()
+                .context("error flushing the writer to the JSON file")?;
+
+            // Add the command arguments
+            command
+                .arg("decomposed")
+                .arg("-d")
+                .arg(DEFAULT_DECOMPOSED_JSON_FILE);
+        }
+    };
+
+    let output = command
         .arg("--noir-file-path")
         .arg(result_path)
         .output()
-        .map_err(Error::CommandExecutionFailed)?;
+        .context("error executing the noir generation command")?;
 
     if !output.status.success() {
-        return Err(Error::CodeGenerationFailed(
-            String::from_utf8(output.stderr).map_err(Error::IncorrectOutputConversion)?,
-        ));
+        anyhow::bail!(Error::CodeGenerationFailed(String::from_utf8(
+            output.stderr
+        )?));
     }
 
     // Load code from stored file.
     let noir_generated_code =
-        fs::read_to_string(result_path).map_err(Error::FailedReadGeneratedCode)?;
+        fs::read_to_string(result_path).context("error writing the noir code into the file")?;
 
     Ok(noir_generated_code)
 }

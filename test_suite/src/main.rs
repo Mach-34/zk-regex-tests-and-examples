@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })?;
 
     for regex_input in database {
-        info!("testing regex {}", regex_input.regex.as_str());
+        info!("testing regex {}", regex_input.regex.complete_regex());
         let mut code_read_result = Code::new(&regex_input);
         match &mut code_read_result {
             Ok(code) => {
@@ -32,42 +32,43 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match compilation_result {
                     Ok(_) => info!(
                         "compilation success for regex {}",
-                        regex_input.regex.as_str()
+                        regex_input.regex.complete_regex()
                     ),
                     Err(e) => {
                         error!(
                             "error compiling the noir project for regex {}: {:?}",
-                            regex_input.regex.as_str(),
+                            regex_input.regex.complete_regex(),
                             e
                         );
                         continue;
                     }
                 }
                 match test_regex(&regex_input, code) {
-                    Ok(successfull_samples) => {
+                    Ok(test_result) => {
                         info!(
-                            "sucess on checking {} samples for regex {}",
-                            successfull_samples,
-                            regex_input.regex.as_str()
+                            "Test passed correctly for regex {}:\n{}",
+                            regex_input.regex.complete_regex(),
+                            test_result
                         );
                     }
-                    Err(tester::Error::TestFailed(string_fail)) => {
-                        error!(
-                            "test failed for string {} for regex {}",
-                            string_fail, regex_input.regex
-                        )
-                    }
-                    Err(e) => {
-                        error!("error testing the regex {}: {:?}", regex_input.regex, e)
-                    }
+                    Err(err) => match err.downcast_ref() {
+                        Some(tester::Error::TestFailed(test_result)) => {
+                            error!(
+                                "test failed for regex {}:\n{}",
+                                regex_input.regex.complete_regex(),
+                                test_result
+                            )
+                        }
+                        None => error!("error downcasting the anyhow::Error"),
+                    },
                 }
             }
-            Err(code::Error::CodeGenerationFailed(console_msg)) => {
-                error!("error generating the code: \n{}", console_msg);
-            }
-            Err(err) => {
-                error!("error generating the code: {:?}", err);
-            }
+            Err(err) => match err.downcast_ref() {
+                Some(code::Error::CodeGenerationFailed(console_msg)) => {
+                    error!("error generating the code: \n{}", console_msg);
+                }
+                None => error!("error downcasting the anyhow::Error"),
+            },
         }
     }
 
