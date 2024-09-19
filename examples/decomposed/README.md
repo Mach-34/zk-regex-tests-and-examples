@@ -12,7 +12,7 @@ In this example the regex is "this email is meant for @[a-z]+" and we're extract
 
 Refer to [Noir's docs](https://noir-lang.org/docs/getting_started/installation/) and [BB instructions](https://github.com/AztecProtocol/aztec-packages/blob/master/barretenberg%2Fcpp%2Fsrc%2Fbarretenberg%2Fbb%2Freadme.md#installation) for installation steps.
 
-Currently Noir support for zk-regex is a [WIP](https://github.com/olehmisar/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/zk-regex/tree/gen_substrs). 
+Currently Noir support for zk-regex is a [WIP](https://github.com/olehmisar/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/gen_substrs). 
 
 ## Usage
 
@@ -99,7 +99,7 @@ fn test_invalid() {
 
 Run tests with
 ```bash
-$ nargo test --show-output
+$ nargo test
 ```
 
 ### Prove & verify
