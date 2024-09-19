@@ -1,8 +1,17 @@
-use std::{fmt::Display, fs, path::Path, process::Command};
+use std::{
+    fmt::Display,
+    fs::{self, File},
+    io::{BufWriter, Write},
+    path::Path,
+    process::Command,
+};
 
 use anyhow::Context;
 
-use crate::{constants, db::RegexInput};
+use crate::{
+    constants::{self, DEFAULT_DECOMPOSED_JSON_FILE},
+    db::{ComponentsWrapper, DbEntry, RegexInput},
+};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -17,7 +26,7 @@ pub struct Code {
 }
 
 impl Code {
-    pub fn new(regex_input: &RegexInput) -> anyhow::Result<Self> {
+    pub fn new(regex_input: &DbEntry) -> anyhow::Result<Self> {
         let noir_code = generate_noir_code(
             &regex_input.regex,
             Path::new(constants::DEFAULT_GENERATION_PATH),
@@ -35,7 +44,8 @@ impl Code {
     }
 
     pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
-        fs::write(path, self.to_string())?;
+        fs::write(path, self.to_string())
+            .context(format!("error writing the code to the path {:?}", path))?;
         Ok(())
     }
 }
@@ -46,8 +56,11 @@ impl Display for Code {
             Some(test_case) => {
                 write!(
                     f,
-                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
-                    self.noir_code, self.input_size, test_case.as_bytes()
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}
+                    \n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
+                    self.noir_code,
+                    self.input_size,
+                    test_case.as_bytes()
                 )
             }
             None => {
@@ -61,10 +74,31 @@ impl Display for Code {
     }
 }
 
-fn generate_noir_code(regex: &str, result_path: &Path) -> anyhow::Result<String> {
-    let output = Command::new("zk-regex")
-        .args(["raw", "--raw-regex"])
-        .arg(regex)
+fn generate_noir_code(regex: &RegexInput, result_path: &Path) -> anyhow::Result<String> {
+    let mut command = Command::new("zk-regex");
+    match regex {
+        RegexInput::Raw(regex_str) => {
+            command.args(["raw", "--raw-regex"]).arg(regex_str);
+        }
+        RegexInput::Decomposed(parts) => {
+            // Write the parts to the JSON file
+            let json_file = File::create(DEFAULT_DECOMPOSED_JSON_FILE)?;
+            let mut writer = BufWriter::new(json_file);
+            serde_json::to_writer(&mut writer, &ComponentsWrapper::new(parts.to_vec()))
+                .context("error writing the parts of the decomposed regex")?;
+            writer
+                .flush()
+                .context("error flushing the writer to the JSON file")?;
+
+            // Add the command arguments
+            command
+                .arg("decomposed")
+                .arg("-d")
+                .arg(DEFAULT_DECOMPOSED_JSON_FILE);
+        }
+    };
+
+    let output = command
         .arg("--noir-file-path")
         .arg(result_path)
         .output()

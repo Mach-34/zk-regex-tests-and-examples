@@ -13,16 +13,39 @@
 {
     "database": [
         {
-            "type": "raw",
-            "regex": "m(a|b)+-(c|d)+e$",
+            "regex": {
+                "raw": "m(a|b)+-(c|d)+e$"
+            },
             "input_size": 16,
             "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
+                "mabab-cdcde",
+                "ma-ce"
             ],
             "samples_fail": [
                 "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
+                "slafjsajdflasjd"
+            ]
+        },
+        {
+            "regex": {
+                "decomposed": [
+                    {
+                        "is_public": false,
+                        "regex_def": "ab"
+                    },
+                    {
+                        "is_public": true,
+                        "regex_def": "cd"
+                    }
+                ]
+            },
+            "input_size": 16,
+            "samples_pass": [
+                "abcd"
+            ],
+            "samples_fail": [
+                "abw",
+                "cdf"
             ]
         }
     ]
@@ -31,6 +54,6 @@
 ### Execute tests
 
 ```
-$ RUST_LOG=debug cargo run
+$ RUST_LOG=info cargo run
 ```
 

@@ -1,81 +1,39 @@
 {
     "database": [
         {
-            "format": "raw",
-            "regex": "m(a|b)+-(c|d)+e$",
+            "regex": {
+                "raw": "m(a|b)+-(c|d)+e$"
+            },
             "input_size": 16,
             "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
+                "mabab-cdcde",
+                "ma-ce"
             ],
             "samples_fail": [
                 "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
+                "slafjsajdflasjd"
             ]
         },
         {
-            "format": "raw",
-            "regex": "m(a|b)+-(c|d)+e$",
+            "regex": {
+                "decomposed": [
+                    {
+                        "is_public": false,
+                        "regex_def": "ab"
+                    },
+                    {
+                        "is_public": true,
+                        "regex_def": "cd"
+                    }
+                ]
+            },
             "input_size": 16,
             "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
+                "abcd"
             ],
             "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
-            ]
-        },
-        {
-            "format": "raw",
-            "regex": ".*dog$",
-            "input_size": 16,
-            "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
-            ],
-            "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
-            ]
-        },
-        {
-            "format": "raw",
-            "regex": "[a-z]+",
-            "input_size": 16,
-            "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
-            ],
-            "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
-            ]
-        },
-        {
-            "format": "raw",
-            "regex": "dog[a-z]+",
-            "input_size": 16,
-            "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
-            ],
-            "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
-            ]
-        },
-        {
-            "format": "raw",
-            "regex": "[a-z]+dog",
-            "input_size": 16,
-            "samples_pass": [
-                "ababababab",
-                "aaaavvvaaabba"
-            ],
-            "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjñsajdflasjd"
+                "abw",
+                "cdf"
             ]
         }
     ]
