@@ -17,64 +17,54 @@ pub enum Error {
 /// Result report for one test.
 #[derive(Default, Debug)]
 pub struct TestResult {
-    /// False negatives.
-    successful_fails: Vec<String>,
-    /// True positives.
-    successful_passes: Vec<String>,
-    /// False positives.
-    unsuccessful_fails: Vec<String>,
-    /// False negatives.
-    unsuccessful_passes: Vec<String>,
+    /// All inputs that were correctly accepted or correctly rejected
+    successful_tests: Vec<String>,
+    /// Input should have been rejected, but was accepted
+    false_positives: Vec<String>,
+    /// Input should have been accepted, but was rejected
+    false_negatives: Vec<String>,
 }
 
 impl TestResult {
     /// Creates a new test result.
     pub fn new(
-        successful_fails: Vec<String>,
-        successful_passes: Vec<String>,
-        unsuccessful_fails: Vec<String>,
-        unsuccessful_passes: Vec<String>,
+        successful_tests: Vec<String>,
+        false_positives: Vec<String>,
+        false_negatives: Vec<String>,
     ) -> Self {
         Self {
-            successful_fails,
-            successful_passes,
-            unsuccessful_fails,
-            unsuccessful_passes,
+            successful_tests,
+            false_positives,
+            false_negatives,
         }
     }
 
     /// Evaluates if the test passed or not. It returns true if the test is correct
     /// for all the samples, otherwise, if some test sample failed, it returns false.
     pub fn passed(&self) -> bool {
-        self.unsuccessful_fails.is_empty() && self.unsuccessful_passes.is_empty()
+        self.false_positives.is_empty() && self.false_negatives.is_empty()
     }
 }
 
 impl Display for TestResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut output = String::new();
-        if !self.successful_passes.is_empty() {
+        if !self.successful_tests.is_empty() {
             output.push_str(&format!(
-                "The following samples that should pass the regex passed the Noir test:\n{:?}\n",
-                self.successful_passes
+                "SUCCESS: The Noir code judged the following samples correctly:\n{:?}\n",
+                self.successful_tests
             ));
         }
-        if !self.successful_fails.is_empty() {
-            output.push_str(&format!(
-                "The following samples that should not match the regex did not pass the Noir test:\n{:?}\n",
-                self.successful_fails
-            ));
-        }
-        if !self.unsuccessful_passes.is_empty() {
+        if !self.false_negatives.is_empty() {
             output.push_str(&format!(
                 "The following samples that should match the regex did NOT pass the Noir test:\n{:?}\n",
-                self.unsuccessful_passes
+                self.false_negatives
             ));
         }
-        if !self.unsuccessful_fails.is_empty() {
+        if !self.false_positives.is_empty() {
             output.push_str(&format!(
                 "The following samples that should NOT match the regex DID pass the Noir test:\n{:?}\n",
-                self.unsuccessful_fails
+                self.false_positives
             ));
         }
         write!(f, "{}", output)
@@ -110,35 +100,40 @@ pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<Test
         }
     };
 
-    let (random_succ_pass, random_unsucc_pass) =
+    // Check whether the randomly generated samples pass the Noir test (they should)
+    let (random_samples_correct, random_samples_wrong) =
         evaluate_test_set(code, &regex_input.regex.complete_regex(), &random_samples)?;
-    let (passes_that_passed, passes_that_not_passed) = evaluate_test_set(
+
+    // Samples from database input
+    let (samples_pass_correct, samples_pass_wrong) = evaluate_test_set(
         code,
         &regex_input.regex.complete_regex(),
         &regex_input.samples_pass,
     )?;
-    let (failures_that_failed, failures_that_not_fail) = evaluate_test_set(
+    let (samples_fail_correct, false_positives) = evaluate_test_set(
         code,
         &regex_input.regex.complete_regex(),
         &regex_input.samples_fail,
     )?;
 
-    let successful_passes = random_succ_pass
+    // All correct results together
+    let successful_tests = random_samples_correct
         .iter()
-        .chain(passes_that_passed.iter())
+        .chain(samples_pass_correct.iter())
+        .chain(samples_fail_correct.iter())
         .cloned()
         .collect();
-    let unsuccessful_passes = random_unsucc_pass
+    // All samples (random + db input) that should have passed, but didn't
+    let false_negatives = random_samples_wrong
         .iter()
-        .chain(passes_that_not_passed.iter())
+        .chain(samples_pass_wrong.iter())
         .cloned()
         .collect();
 
     let test_result = TestResult::new(
-        failures_that_failed,
-        successful_passes,
-        failures_that_not_fail,
-        unsuccessful_passes,
+        successful_tests,
+        false_positives, // Samples that should have been rejected, but weren't
+        false_negatives,
     );
 
     if !test_result.passed() {
@@ -162,6 +157,7 @@ fn evaluate_test_set(
         code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE))?;
         let test_result = test_noir_code()?;
 
+        // Verify whether the Noir program passes or fails sample equal to a standard Rust lib
         let ground_truth_verification = check_with_ground_truth(string, regex, test_result)?;
 
         if !ground_truth_verification {
