@@ -6,21 +6,29 @@ use rand_regex::Regex;
 
 use crate::{code::Code, constants, db::DbEntry};
 
+/// Built-in errors for the testing phase.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// This error is thrown when the test fails for at least one sample.
     #[error("the regex should recognize this string: {0:?}")]
     TestFailed(TestResult),
 }
 
+/// Result report for one test.
 #[derive(Default, Debug)]
 pub struct TestResult {
+    /// False negatives.
     successful_fails: Vec<String>,
+    /// True positives.
     successful_passes: Vec<String>,
+    /// False positives.
     unsuccessful_fails: Vec<String>,
+    /// False negatives.
     unsuccessful_passes: Vec<String>,
 }
 
 impl TestResult {
+    /// Creates a new test result.
     pub fn new(
         successful_fails: Vec<String>,
         successful_passes: Vec<String>,
@@ -35,6 +43,8 @@ impl TestResult {
         }
     }
 
+    /// Evaluates if the test passed or not. It returns true if the test is correct
+    /// for all the samples, otherwise, if some test sample failed, it returns false.
     pub fn passed(&self) -> bool {
         self.unsuccessful_fails.is_empty() && self.unsuccessful_passes.is_empty()
     }
@@ -71,6 +81,7 @@ impl Display for TestResult {
     }
 }
 
+/// Test a sample for a given regex.
 pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<TestResult> {
     // Generate the random strings
     let str_generator_result = Regex::compile(
@@ -162,6 +173,8 @@ fn evaluate_test_set(
     Ok((successfull_samples, failed_samples))
 }
 
+/// Executes the `nargo test` command on the Noir project to test the result of the regex
+/// from the Noir perspective.
 fn test_noir_code() -> anyhow::Result<bool> {
     let output = Command::new("nargo")
         .arg("test")
@@ -171,6 +184,8 @@ fn test_noir_code() -> anyhow::Result<bool> {
     Ok(output.status.success())
 }
 
+/// Compares the Noir test result from the `nargo test` command with respect to a traditional
+/// regex Rust library.
 fn check_with_ground_truth(string: &str, regex: &str, noir_result: bool) -> anyhow::Result<bool> {
     let ground_truth_checker =
         regex::Regex::new(regex).context("error parsing the regex in the ground truth checker")?;

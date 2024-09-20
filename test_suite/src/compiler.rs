@@ -4,12 +4,14 @@ use anyhow::Context;
 
 use crate::constants;
 
+/// Errors that may appear when compiling the Noir code.
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("error compiling the code for the current regex: {0:?}")]
     ProjectCompilation(String),
 }
 
+/// Function that compiles the Noir project.
 pub fn compile_noir_project() -> anyhow::Result<()> {
     let output = Command::new("nargo")
         .arg("compile")
@@ -19,7 +21,7 @@ pub fn compile_noir_project() -> anyhow::Result<()> {
     if !output.status.success() {
         anyhow::bail!(Error::ProjectCompilation(
             String::from_utf8(output.stderr)
-                .context("error parsing the output from the command execution")?
+                .context("error parsing the output from the compile command")?
         ));
     }
     Ok(())

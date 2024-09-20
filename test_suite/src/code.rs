@@ -13,19 +13,27 @@ use crate::{
     db::{ComponentsWrapper, DbEntry, RegexInput},
 };
 
+/// Errors that can arise when generating the Noir code
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    /// This error is used when the generation of the code is not successful and
+    /// contains the regex that produced such an error.
     #[error("error generating the code from the regex")]
     CodeGenerationFailed(String),
 }
 
+/// Represents the information to construct a noir code.
 pub struct Code {
+    /// Code generated using the zk-email tool.
     noir_code: String,
+    /// Input size of provided to the main function in the Noir project.
     input_size: usize,
+    /// Test case added to the main file of the noir project.
     test_case: Option<String>,
 }
 
 impl Code {
+    /// Creates a new code from the inputs of the database.
     pub fn new(regex_input: &DbEntry) -> anyhow::Result<Self> {
         let noir_code = generate_noir_code(
             &regex_input.regex,
@@ -39,10 +47,12 @@ impl Code {
         })
     }
 
+    /// Modifies the test case.
     pub fn set_test_case(&mut self, test_case: &str) {
         self.test_case = Some(String::from(test_case));
     }
 
+    /// Writes the current source code into a file in a given path.
     pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
         fs::write(path, self.to_string())
             .context(format!("error writing the code to the path {:?}", path))?;
@@ -74,6 +84,7 @@ impl Display for Code {
     }
 }
 
+/// Function that generates the Noir code associated to a regex.
 fn generate_noir_code(regex: &RegexInput, result_path: &Path) -> anyhow::Result<String> {
     let mut command = Command::new("zk-regex");
     match regex {
