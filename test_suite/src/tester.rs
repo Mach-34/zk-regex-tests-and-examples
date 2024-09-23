@@ -152,8 +152,9 @@ impl SubstringTestResult {
 /// Tests a given regex:
 /// - against randomly generate samples. Checks that they give the same outcome for Noir as for a Rust regex lib
 ///     (the random samples are assumed to pass in both)
-/// - against input samples, of both passing and failing inputs
-/// Note: raw + gen_substrs case does *not* get tested with randomly generated samples
+///     Additionally, for the substrs case, the correctness of the substring output is also checked
+/// - against (user) input samples, of both passing and failing inputs
+/// Note: raw + gen_substrs case does *not* get tested with randomly generated samples, because these are too difficult to generate
 pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<TestResult> {
     let test_result = match &regex_input.samples_pass {
         SamplesPass::WithSubstrs(samples) => {
@@ -212,6 +213,10 @@ pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<Test
     Ok(test_result)
 }
 
+/// Test the input samples for gensubstrs case:
+/// - samples_pass; each sample has an input and expected substring outputs.
+///                 the input should pass the regex check & the substrings should match the expected output
+/// - samples_fail: input shouldn't pass regex check. Substrings are disregarded here
 fn test_given_samples_gensubstr(
     code: &mut Code,
     samples_pass: &Vec<InputWithSubstrs>,
@@ -226,7 +231,7 @@ fn test_given_samples_gensubstr(
     // - correct amount of substrings are extracted
     // - extracted substrings are correct
     for sample in samples_pass {
-        let test_passed = run_single_substrs_test(code, sample)?;
+        let test_passed = run_single_gen_substr_test(code, sample)?;
 
         if test_passed {
             correct_samples.push(sample.input.clone());
@@ -243,17 +248,20 @@ fn test_given_samples_gensubstr(
         let correct_result = run_single_standard_test(code, failing_sample, true)?;
 
         if correct_result {
-          correct_samples.push(failing_sample.clone());
+            correct_samples.push(failing_sample.clone());
         } else {
-          false_positives.push(failing_sample.clone());
+            false_positives.push(failing_sample.clone());
         }
     }
 
     Ok((correct_samples, incorrect_substring_tests, false_positives))
 }
 
+/// Test the regex for gives samples that are expected to pass & fail respectively
+/// Note that the user input decides whether a sample is expected to pass/fail
+/// (this is *not* checked again a regex Rust impl)
 fn test_given_samples_standard(
-    code: &mut Code,
+    code: &Code,
     test_set_pass: &[String],
     test_set_fail: &[String],
 ) -> anyhow::Result<(Vec<String>, Vec<String>, Vec<String>)> {
@@ -325,7 +333,7 @@ fn test_random_samples_gen_substrs(
             input: total_string.clone(),
             expected_substrings: substrings,
         };
-        let test_passed = run_single_substrs_test(code, &input_with_substring)?;
+        let test_passed = run_single_gen_substr_test(code, &input_with_substring)?;
         if test_passed {
             random_samples_correct.push(total_string);
         } else {
@@ -366,28 +374,35 @@ fn test_for_random_samples(
     Ok((random_samples_correct, random_samples_wrong))
 }
 
-/// Fill the standard testcase with given test input and run test
 fn run_single_standard_test(
-    code: &mut Code,
-    string: &str,
+    code: &Code,
+    standard_test: &String,
+    should_fail: bool, // Whether the Noir test should fail
+) -> Result<bool, anyhow::Error> {
+    return run_single_test(code, Some(standard_test), None, should_fail);
+}
+
+fn run_single_gen_substr_test(
+    code: &Code,
+    gen_substr_test: &InputWithSubstrs,
+) -> Result<bool, anyhow::Error> {
+    // Substr tests should always pass
+    return run_single_test(code, None, Some(gen_substr_test), true);
+}
+
+/// Write the correct test to the Noir file and run it
+fn run_single_test(
+    code: &Code,
+    standard_test: Option<&String>,
+    gen_substr_test: Option<&InputWithSubstrs>,
     should_fail: bool,
 ) -> Result<bool, anyhow::Error> {
-    code.set_standard_test_case(string);
-    code.set_should_fail(should_fail);
-    create_file_and_test(code)
-}
-
-/// Fill the substring testcase with given test input & expected substrings, and run test
-fn run_single_substrs_test(
-    code: &mut Code,
-    sample: &InputWithSubstrs,
-) -> Result<bool, anyhow::Error> {
-    code.set_substrs_test_case(sample);
-    create_file_and_test(code)
-}
-
-fn create_file_and_test(code: &mut Code) -> Result<bool, anyhow::Error> {
-    code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE))?;
+    code.write_test_to_path(
+        standard_test,
+        gen_substr_test,
+        should_fail,
+        Path::new(constants::DEFAULT_PROJECT_MAIN_FILE),
+    )?;
     let test_result = test_noir_code()?;
     Ok(test_result)
 }

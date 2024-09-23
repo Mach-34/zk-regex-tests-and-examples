@@ -1,9 +1,11 @@
 use std::{
     fs::{self, File},
-    io::{BufWriter, Write},
+    io::{BufWriter, Write as _},
     path::Path,
     process::Command,
 };
+
+use std::fmt::Write;
 
 use anyhow::Context;
 
@@ -27,11 +29,6 @@ pub struct Code {
     noir_code: String,
     /// Input size of provided to the main function in the Noir project.
     input_size: usize,
-    /// Test case added to the main file of the noir project. Calls `regex_match` for an input
-    standard_test_case: Option<String>,
-    /// Test case that extracts and verifies substrings
-    substrs_test_case: Option<InputWithSubstrs>,
-    should_fail: bool,
 }
 
 impl Code {
@@ -46,52 +43,57 @@ impl Code {
         Ok(Self {
             noir_code,
             input_size: regex_input.input_size,
-            standard_test_case: None,
-            substrs_test_case: None,
-            should_fail: false,
         })
-    }
-
-    /// Modifies the standard test case.
-    pub fn set_standard_test_case(&mut self, test_case: &str) {
-        self.standard_test_case = Some(String::from(test_case));
-    }
-
-    /// Modifies the substring test case.
-    pub fn set_substrs_test_case(&mut self, test_case: &InputWithSubstrs) {
-        self.substrs_test_case = Some(test_case.clone());
-    }
-
-    pub fn set_should_fail(&mut self, b: bool) {
-        self.should_fail = b;
     }
 
     /// Writes the current source code into a file in a given path.
     pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
-        fs::write(path, self.to_string())
+        fs::write(path, self.print_code(None, None, false))
             .context(format!("error writing the code to the path {:?}", path))?;
         Ok(())
     }
-}
-impl std::fmt::Display for Code {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match (&self.standard_test_case, &self.substrs_test_case) {
+    pub fn write_test_to_path(
+        &self,
+        standard_test: Option<&String>,
+        gen_substr_test: Option<&InputWithSubstrs>,
+        should_fail: bool,
+        path: &Path,
+    ) -> anyhow::Result<()> {
+        fs::write(
+            path,
+            self.print_code(standard_test, gen_substr_test, should_fail),
+        )
+        .context(format!("error writing the code to the path {:?}", path))?;
+        Ok(())
+    }
+
+    pub fn print_code(
+        &self,
+        standard_test: Option<&String>,
+        gen_substr_test: Option<&InputWithSubstrs>,
+        // gen_substrs tests always pass, but standard tests might be expected to fail
+        should_fail: bool,
+    ) -> String {
+        let mut s = String::new();
+
+        match (standard_test, gen_substr_test) {
             // Handle the standard test case
             (Some(test_case), None) => {
                 write!(
-                    f,
+                    &mut s,
                     "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n{}\nfn test() {{\n\
                   let input = {:?};\nregex_match(input);\n\
                   }}",
                     self.noir_code,  // Noir code part of `Code`
                     self.input_size, // Input size for the main function
-                    if self.should_fail {
+                    if should_fail {
                         "#[test(should_fail)]"
                     } else {
                         "#[test]"
                     },
                     test_case.as_bytes() // Test case converted to byte array
                 )
+                .unwrap();
             }
 
             // Handle the substring test case
@@ -103,8 +105,8 @@ impl std::fmt::Display for Code {
                 }),
             ) => {
                 write!(
-                    f,
-                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n{}\nfn test() {{\n\
+                    &mut s,
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n#[test]\nfn test() {{\n\
                   // Input for regex match\n\
                   let input = {:?};\n\
                   // This should contain {} substrings\n\
@@ -112,37 +114,36 @@ impl std::fmt::Display for Code {
                   assert(res.len() == {});\n",
                     self.noir_code,  // Noir code part of `Code`
                     self.input_size, // Input size for the main function
-                    if self.should_fail { // prob not needed
-                        "#[test(should_fail)]"
-                    } else {
-                        "#[test]"
-                    },
                     input_byte_array.as_bytes(), // Byte array input for the regex
-                    expected_substrings.len(), // Number of expected substrings
-                    expected_substrings.len()  // Assertion: number of substrings
-                )?;
+                    expected_substrings.len(),   // Number of expected substrings
+                    expected_substrings.len()    // Assertion: number of substrings
+                )
+                .unwrap();
 
                 // Iterate over expected substrings and generate assertions
                 for (i, substr) in expected_substrings.iter().enumerate() {
-                    writeln!(f, "let substr{} = res.get({});", i, i)?;
+                    writeln!(s, "let substr{} = res.get({});", i, i).unwrap();
                     for (j, byte) in substr.bytes().enumerate() {
-                        writeln!(f, "assert(substr{}.get({}) == {});", i, j, byte)?;
+                        writeln!(s, "assert(substr{}.get({}) == {});", i, j, byte).unwrap();
                     }
+                    writeln!(s, "assert(substr{}.len() == {});", i, substr.len()).unwrap();
                 }
 
-                // Closing bracket for the test function
-                writeln!(f, "}}")
+                writeln!(s, "}}").unwrap(); // Close the test function
             }
 
             // Default case: no test case provided
             _ => {
                 write!(
-                    f,
+                    &mut s,
                     "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}",
                     self.noir_code, self.input_size,
                 )
+                .unwrap();
             }
         }
+
+        s
     }
 }
 
