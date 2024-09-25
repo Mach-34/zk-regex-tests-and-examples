@@ -159,7 +159,7 @@ pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<Test
     let test_result = match &regex_input.samples_pass {
         SamplesPass::WithSubstrs(samples) => {
             // Random sample testing for substrings is only done for decomposed setting
-            let (random_samples_correct, incorrect_substring_tests1) = match &regex_input.regex {
+            let (random_samples_correct, incorrect_substring_random_test) = match &regex_input.regex {
                 RegexInput::Decomposed(parts) => {
                     test_random_samples_gen_substrs(parts, regex_input.input_size as u32, code)?
                 }
@@ -168,14 +168,14 @@ pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<Test
 
             // Run tests for input samples. The test extracts substrings and compares them to the input for passing samples
             // For failing samples it does a standard test (no substring extraction)
-            let (input_samples_correct, incorrect_substring_tests2, false_positives) =
+            let (input_samples_correct, incorrect_substring_given_samples_test, false_positives) =
                 test_given_samples_gensubstr(code, samples, &regex_input.samples_fail)?;
 
             // Collect results
             let mut successful_tests = random_samples_correct;
             successful_tests.extend(input_samples_correct);
-            let mut all_incorrect_substring_tests = incorrect_substring_tests1;
-            all_incorrect_substring_tests.extend(incorrect_substring_tests2);
+            let mut all_incorrect_substring_tests = incorrect_substring_random_test;
+            all_incorrect_substring_tests.extend(incorrect_substring_given_samples_test);
             TestResult::Substring(SubstringTestResult::new(
                 successful_tests,
                 false_positives,
@@ -379,7 +379,7 @@ fn run_single_standard_test(
     standard_test: &String,
     should_fail: bool, // Whether the Noir test should fail
 ) -> Result<bool, anyhow::Error> {
-    return run_single_test(code, Some(standard_test), None, should_fail);
+    run_single_test(code, Some(standard_test), None, should_fail)
 }
 
 fn run_single_gen_substr_test(
@@ -387,7 +387,7 @@ fn run_single_gen_substr_test(
     gen_substr_test: &InputWithSubstrs,
 ) -> Result<bool, anyhow::Error> {
     // Substr tests should always pass
-    return run_single_test(code, None, Some(gen_substr_test), true);
+    run_single_test(code, None, Some(gen_substr_test), true)
 }
 
 /// Write the correct test to the Noir file and run it
