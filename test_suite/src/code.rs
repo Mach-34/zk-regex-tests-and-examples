@@ -1,16 +1,17 @@
 use std::{
-    fmt::Display,
     fs::{self, File},
-    io::{BufWriter, Write},
+    io::{BufWriter, Write as _},
     path::Path,
     process::Command,
 };
 
+use std::fmt::Write;
+
 use anyhow::Context;
 
 use crate::{
-    constants::{self, DEFAULT_DECOMPOSED_JSON_FILE},
-    db::{ComponentsWrapper, DbEntry, RegexInput},
+    constants::{self, DEFAULT_DECOMPOSED_JSON_FILE, DEFAULT_SUBSTRS_JSON_PATH},
+    db::{ComponentsWrapper, DbEntry, InputWithSubstrs, RawRegex, RegexInput},
 };
 
 /// Errors that can arise when generating the Noir code
@@ -28,8 +29,6 @@ pub struct Code {
     noir_code: String,
     /// Input size of provided to the main function in the Noir project.
     input_size: usize,
-    /// Test case added to the main file of the noir project.
-    test_case: Option<String>,
 }
 
 impl Code {
@@ -37,59 +36,146 @@ impl Code {
     pub fn new(regex_input: &DbEntry) -> anyhow::Result<Self> {
         let noir_code = generate_noir_code(
             &regex_input.regex,
+            regex_input.gen_substrs,
             Path::new(constants::DEFAULT_GENERATION_PATH),
         )
         .context("error generating the noir code")?;
         Ok(Self {
             noir_code,
             input_size: regex_input.input_size,
-            test_case: None,
         })
-    }
-
-    /// Modifies the test case.
-    pub fn set_test_case(&mut self, test_case: &str) {
-        self.test_case = Some(String::from(test_case));
     }
 
     /// Writes the current source code into a file in a given path.
     pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
-        fs::write(path, self.to_string())
+        fs::write(path, self.print_code(None, None, false))
             .context(format!("error writing the code to the path {:?}", path))?;
         Ok(())
     }
-}
+    pub fn write_test_to_path(
+        &self,
+        standard_test: Option<&String>,
+        gen_substr_test: Option<&InputWithSubstrs>,
+        should_fail: bool,
+        path: &Path,
+    ) -> anyhow::Result<()> {
+        fs::write(
+            path,
+            self.print_code(standard_test, gen_substr_test, should_fail),
+        )
+        .context(format!("error writing the code to the path {:?}", path))?;
+        Ok(())
+    }
 
-impl Display for Code {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.test_case {
-            Some(test_case) => {
+    pub fn print_code(
+        &self,
+        standard_test: Option<&String>,
+        gen_substr_test: Option<&InputWithSubstrs>,
+        // gen_substrs tests always pass, but standard tests might be expected to fail
+        should_fail: bool,
+    ) -> String {
+        let mut s = String::new();
+
+        match (standard_test, gen_substr_test) {
+            // Handle the standard test case
+            (Some(test_case), None) => {
                 write!(
-                    f,
-                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}
-                    \n\n#[test]\nfn test() {{ let input = {:?}; regex_match(input); }}",
-                    self.noir_code,
-                    self.input_size,
-                    test_case.as_bytes()
+                    &mut s,
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n{}\nfn test() {{\n\
+                  let input = {:?};\nregex_match(input);\n\
+                  }}",
+                    self.noir_code,  // Noir code part of `Code`
+                    self.input_size, // Input size for the main function
+                    if should_fail {
+                        "#[test(should_fail)]"
+                    } else {
+                        "#[test]"
+                    },
+                    test_case.as_bytes() // Test case converted to byte array
                 )
+                .unwrap();
             }
-            None => {
+
+            // Handle the substring test case
+            (
+                _,
+                Some(InputWithSubstrs {
+                    input: input_byte_array,
+                    expected_substrings,
+                }),
+            ) => {
                 write!(
-                    f,
+                    &mut s,
+                    "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}\n\n#[test]\nfn test() {{\n\
+                  // Input for regex match\n\
+                  let input = {:?};\n\
+                  // This should contain {} substrings\n\
+                  let res = regex_match(input);\n\
+                  assert(res.len() == {});\n",
+                    self.noir_code,  // Noir code part of `Code`
+                    self.input_size, // Input size for the main function
+                    input_byte_array.as_bytes(), // Byte array input for the regex
+                    expected_substrings.len(),   // Number of expected substrings
+                    expected_substrings.len()    // Assertion: number of substrings
+                )
+                .unwrap();
+
+                // Iterate over expected substrings and generate assertions
+                for (i, substr) in expected_substrings.iter().enumerate() {
+                    writeln!(s, "let substr{} = res.get({});", i, i).unwrap();
+                    for (j, byte) in substr.bytes().enumerate() {
+                        writeln!(s, "assert(substr{}.get({}) == {});", i, j, byte).unwrap();
+                    }
+                    writeln!(s, "assert(substr{}.len() == {});", i, substr.len()).unwrap();
+                }
+
+                writeln!(s, "}}").unwrap(); // Close the test function
+            }
+
+            // Default case: no test case provided
+            _ => {
+                write!(
+                    &mut s,
                     "{}\nfn main(input: [u8; {}]) {{ regex_match(input); }}",
                     self.noir_code, self.input_size,
                 )
+                .unwrap();
             }
         }
+
+        s
     }
 }
 
 /// Function that generates the Noir code associated to a regex.
-fn generate_noir_code(regex: &RegexInput, result_path: &Path) -> anyhow::Result<String> {
+fn generate_noir_code(
+    regex: &RegexInput,
+    gen_substrs: bool,
+    result_path: &Path,
+) -> anyhow::Result<String> {
     let mut command = Command::new("zk-regex");
     match regex {
-        RegexInput::Raw(regex_str) => {
+        RegexInput::Raw(RawRegex::Simple(regex_str)) => {
             command.args(["raw", "--raw-regex"]).arg(regex_str);
+        }
+        RegexInput::Raw(RawRegex::WithTransitions {
+            regex: regex_str,
+            transitions,
+        }) => {
+            command.args(["raw", "--raw-regex"]).arg(regex_str);
+            // If substrings should be extracted, add the transitions file
+            if gen_substrs {
+                // Write the parts to the JSON file
+                let json_file = File::create(DEFAULT_SUBSTRS_JSON_PATH)?;
+                let mut writer = BufWriter::new(json_file);
+                serde_json::to_writer(&mut writer, transitions)
+                    .context("error writing the transitions of raw regex for gen_substrs")?;
+                writer
+                    .flush()
+                    .context("error flushing the writer to the JSON file")?;
+
+                command.args(["-s", DEFAULT_SUBSTRS_JSON_PATH]);
+            }
         }
         RegexInput::Decomposed(parts) => {
             // Write the parts to the JSON file
@@ -108,6 +194,11 @@ fn generate_noir_code(regex: &RegexInput, result_path: &Path) -> anyhow::Result<
                 .arg(DEFAULT_DECOMPOSED_JSON_FILE);
         }
     };
+
+    // If substrings should be extracted, add the command
+    if gen_substrs {
+        command.args(["-g", "true"]);
+    }
 
     let output = command
         .arg("--noir-file-path")

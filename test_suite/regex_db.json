@@ -1,40 +1,133 @@
 {
-    "database": [
+  "database": [
+    {
+      "regex": {
+        "raw": "m(a|b)+-(c|d)+e$"
+      },
+      "input_size": 16,
+      "samples_pass": [
+        "mabab-cdcde",
+        "ma-ce"
+      ],
+      "samples_fail": [
+        "sdjfalsdjflasjf",
+        "slafjsajdflasjd"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "ab"
+          },
+          {
+            "is_public": true,
+            "regex_def": "cd"
+          }
+        ]
+      },
+      "input_size": 16,
+      "samples_pass": [
+        "abcd"
+      ],
+      "samples_fail": [
+        "abw",
+        "cdf"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "email was meant for @"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[a-z]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
         {
-            "regex": {
-                "raw": "m(a|b)+-(c|d)+e$"
-            },
-            "input_size": 16,
-            "samples_pass": [
-                "mabab-cdcde",
-                "ma-ce"
-            ],
-            "samples_fail": [
-                "sdjfalsdjflasjf",
-                "slafjsajdflasjd"
-            ]
+          "input": "email was meant for @test",
+          "expected_substrings": [
+            "test"
+          ]
         },
         {
-            "regex": {
-                "decomposed": [
-                    {
-                        "is_public": false,
-                        "regex_def": "ab"
-                    },
-                    {
-                        "is_public": true,
-                        "regex_def": "cd"
-                    }
-                ]
-            },
-            "input_size": 16,
-            "samples_pass": [
-                "abcd"
-            ],
-            "samples_fail": [
-                "abw",
-                "cdf"
-            ]
+          "input": "email was meant for @noir",
+          "expected_substrings": [
+            "noir"
+          ]
         }
-    ]
+      ],
+      "samples_fail": [
+        "abw",
+        "cdf"
+      ]
+    },
+    {
+      "regex": {
+        "raw": {
+          "regex": "1=(a|b) (2=(b|c)+ )+d",
+          "transitions": {
+            "transitions": [
+              [
+                [
+                  2,
+                  3
+                ]
+              ],
+              [
+                [
+                  6,
+                  7
+                ],
+                [
+                  7,
+                  7
+                ]
+              ],
+              [
+                [
+                  8,
+                  9
+                ]
+              ]
+            ]
+          }
+        }
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        {
+          "input": "1=a 2=bbbbbc d",
+          "expected_substrings": [
+            "a",
+            "bbbbbc",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=bbcb 2=c 2=bb d",
+          "expected_substrings": [
+            "b",
+            "bbcb",
+            "c",
+            "bb",
+            "d"
+          ]
+        }
+      ],
+      "samples_fail": [
+        "sdjfalsdjflasjf",
+        "slafjsajdflasjd"
+      ]
+    }
+  ]
 }

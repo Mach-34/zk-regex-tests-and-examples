@@ -20,10 +20,42 @@ pub struct RegexFragment {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RegexInput {
-    /// A raw regex.
-    Raw(String),
-    /// A decomposed regex defined by fragments.
+    /// A raw regex with optional transitions.
+    Raw(RawRegex),
+    /// A decomposed regex defined by fragments and whether substrings should be extracted.
     Decomposed(Vec<RegexFragment>),
+}
+
+// `RawRegex` can either be a simple string or an object with transitions.
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(untagged)] // Allows deserialization of either a string or a structured object.
+pub enum RawRegex {
+    /// Simple string form for raw regex.
+    Simple(String),
+    /// Structured form with optional transitions.
+    WithTransitions {
+        /// The raw regex string.
+        regex: String,
+        /// Optional transitions.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        transitions: Option<Transitions>,
+    },
+}
+
+impl RawRegex {
+    fn get_regex(&self) -> String {
+        match self {
+            RawRegex::Simple(str) => str.clone(),
+            RawRegex::WithTransitions { regex, .. } => regex.clone(),
+        }
+    }
+}
+
+// Struct representing the transitions.
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Transitions {
+    /// Transitions data.
+    pub transitions: Vec<Vec<Vec<u32>>>,
 }
 
 impl RegexInput {
@@ -32,7 +64,7 @@ impl RegexInput {
     /// return the concatenation of all the fragments.
     pub fn complete_regex(&self) -> String {
         match self {
-            Self::Raw(string) => string.clone(),
+            Self::Raw(rawregex) => rawregex.get_regex(),
             Self::Decomposed(fragments) => fragments
                 .iter()
                 .map(|fragment| fragment.regex_def.clone()) // TODO: Check if we can avoid clonning.
@@ -41,16 +73,36 @@ impl RegexInput {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(untagged)] // Automatically distinguish between the two formats
+pub enum SamplesPass {
+    /// For cases with substrings (complex structure)
+    WithSubstrs(Vec<InputWithSubstrs>),
+    /// For cases without substrings (simple structure)
+    WithoutSubstrs(Vec<String>),
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct InputWithSubstrs {
+    /// The input string
+    pub input: String,
+    /// The expected substrings from the input
+    pub expected_substrings: Vec<String>,
+}
+
 /// An entry of the test database.
 #[derive(Deserialize, Serialize)]
 pub struct DbEntry {
     /// The regex of the entry.
     pub regex: RegexInput,
+    /// Whether substrings should be generated. Default false
+    #[serde(default)]
+    pub gen_substrs: bool,
     /// The maximum input size to generate random regexes for testing.
     pub input_size: usize,
-    /// Samples that should pass that are inputted by the user.
-    pub samples_pass: Vec<String>,
-    /// Samples that should fail that are inputted by the user.
+    /// Samples that are provided as input by the user and expected to pass the regex
+    pub samples_pass: SamplesPass,
+    /// Samples that are provided as input by the user and *not* expected to pass the regex.
     pub samples_fail: Vec<String>,
 }
 
