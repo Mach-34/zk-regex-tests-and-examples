@@ -1,9 +1,11 @@
+mod bench;
 mod code;
 mod compiler;
 mod constants;
 mod db;
 mod tester;
 
+use bench::execute_count_gate_command;
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
@@ -46,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match test_regex(&regex_input, code) {
                     Ok(test_result) => {
                         info!(
-                            "Test passed correctly for regex {}:\n{}",
+                            "test passed correctly for regex {}:\n{}",
                             regex_input.regex.complete_regex(),
                             test_result
                         );
@@ -61,6 +63,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                         None => error!("error downcasting the anyhow::Error"),
                     },
+                }
+                if regex_input.with_bench {
+                    match execute_count_gate_command() {
+                        Ok(bench_result) => {
+                            info!("benchmark results:\n{}", bench_result);
+                        }
+                        Err(err) => {
+                            error!(
+                                "error running the benchmark for regex {}: {:?}",
+                                regex_input.regex.complete_regex(),
+                                err
+                            )
+                        }
+                    }
                 }
             }
             Err(err) => match err.downcast_ref() {

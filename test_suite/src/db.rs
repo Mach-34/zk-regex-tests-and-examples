@@ -104,6 +104,9 @@ pub struct DbEntry {
     pub samples_pass: SamplesPass,
     /// Samples that are provided as input by the user and *not* expected to pass the regex.
     pub samples_fail: Vec<String>,
+    /// Defines wether you want a benchmark for the regex in the given test
+    #[serde(default)]
+    pub with_bench: bool,
 }
 
 impl RegexDb {
