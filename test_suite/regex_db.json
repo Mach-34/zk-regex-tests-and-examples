@@ -1,10 +1,10 @@
 {
+  "bench_all": false,
   "database": [
     {
       "regex": {
         "raw": "m(a|b)+-(c|d)+e"
       },
-      "with_bench": true,
       "input_size": 16,
       "samples_pass": [
         "mabab-cdcde",

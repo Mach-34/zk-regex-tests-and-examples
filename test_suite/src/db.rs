@@ -5,7 +5,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Database of regular expressions that will be tested.
-pub struct RegexDb(Vec<DbEntry>);
+#[derive(Deserialize)]
+pub struct RegexDb {
+    // Regex entries in the database
+    db_entries: Vec<DbEntry>,
+    // Defines wether we need to benchmark all the entries in the database.
+    #[serde(default)]
+    pub bench_all: bool,
+}
 
 /// Represents each fragment in a decomposed regex.
 #[derive(Deserialize, Serialize, Clone)]
@@ -119,13 +126,23 @@ impl RegexDb {
         let regex_db: Vec<DbEntry> = serde_json::from_str(&json_value["database"].to_string())
             .context("error parsing the database array")?;
 
+        // If the field in the "bench_all" is a boolean, take the boolean,
+        // otherwhise, use false as a default.
+        let bench_all: bool = match json_value["bench_all"].as_bool() {
+            Some(flag) => flag,
+            None => false,
+        };
+
         let mut regexes = Vec::new();
 
         for db_element in regex_db {
             regexes.push(db_element);
         }
 
-        Ok(Self(regexes))
+        Ok(Self {
+            db_entries: regexes,
+            bench_all,
+        })
     }
 }
 
@@ -134,7 +151,7 @@ impl IntoIterator for RegexDb {
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+        self.db_entries.into_iter()
     }
 }
 

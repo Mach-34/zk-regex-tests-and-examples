@@ -14,3 +14,5 @@ pub const DEFAULT_DECOMPOSED_JSON_FILE: &str = "./decomposed.json";
 pub const DEFAULT_SUBSTRS_JSON_PATH: &str = "./substrs_transitions.json";
 /// Default path of the target folder for the project
 pub const DEFAULT_TARJET_JSON_FILE: &str = "./execution_project/target/execution_project.json";
+/// Default path for bench report
+pub const DEFAULT_BENCH_RESULT_FILE: &str = "./bench_result.csv";

@@ -5,7 +5,7 @@ mod constants;
 mod db;
 mod tester;
 
-use bench::execute_count_gate_command;
+use bench::{execute_count_gate_command, BenchReport};
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
@@ -24,6 +24,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             err
         })?;
 
+    let benchmark_all = database.bench_all;
+    let mut bench_report = BenchReport::default();
     for regex_input in database {
         info!("testing regex {}", regex_input.regex.complete_regex());
         let mut code_read_result = Code::new(&regex_input);
@@ -64,10 +66,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                         None => error!("error downcasting the anyhow::Error"),
                     },
                 }
-                if regex_input.with_bench {
+                if regex_input.with_bench || benchmark_all {
                     match execute_count_gate_command() {
-                        Ok(bench_result) => {
+                        Ok(mut bench_result) => {
                             info!("benchmark results:\n{}", bench_result);
+                            // Changes the data needed to write the report.
+                            bench_result.regex = regex_input.regex.complete_regex();
+                            bench_result.with_gen_substr = regex_input.gen_substrs;
+                            bench_report.push_result(bench_result);
                         }
                         Err(err) => {
                             error!(
@@ -86,6 +92,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None => error!("error downcasting the anyhow::Error"),
             },
         }
+    }
+
+    // Save the bench results.
+    if !bench_report.is_empty() {
+        info!("saving benchmark results into CSV");
+        bench_report.save(Path::new(constants::DEFAULT_BENCH_RESULT_FILE))?;
     }
 
     Ok(())
