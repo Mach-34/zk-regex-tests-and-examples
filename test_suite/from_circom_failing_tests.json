@@ -1,0 +1,177 @@
+{
+  "database": [
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+bh="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[a-zA-Z0-9+/=]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="]
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="]
+        }
+      ],
+      "samples_fail": ["\r\nto: dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)from:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([^\\r\\n]+<)?"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./@]+@[A-Za-z0-9.\\-]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ">?\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 100,
+      "samples_pass": [
+        {
+          "input": "from:suegamisora@gmail.com\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "from:Sora Suegami <suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "from:dummy@example.com<suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "from: \"末神奏宙\" <suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nfrom:suegamisora@gmail.com\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nfrom:Sora Suegami <suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nfrom:dummy@example.com<suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nfrom: \"末神奏宙\" <suegamisora@gmail.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "from:Sora Suegami <suegamisora@gmail.com@dummy.com>\r\n",
+          "expected_substrings": ["suegamisora@gmail.com@dummy.com"]
+        },
+        {
+          "input": "from:Sora Suegami <@gmail.com@dummy.com>\r\n",
+          "expected_substrings": ["@gmail.com@dummy.com"]
+        }
+      ],
+      "samples_fail": [
+        "\r\nto:from:Sora Suegami <suegamisora@gmail.com>\r\n"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)to:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([^\\r\\n]+<)?"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./@]+@[a-zA-Z0-9.\\-]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ">?\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "to:adityabisht@gmail.com\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "to:Aditya Bisht <adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "to:dummy@example.com<adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "to: \"末神奏宙\" <adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nto:adityabisht@gmail.com\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nto:Sora Suegami <adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nto:dummy@example.com<adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "dummy\r\nto: \"末神奏宙\" <adityabisht@gmail.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com"]
+        },
+        {
+          "input": "to:Aditya Bisht <adityabisht@gmail.com@dummy.com>\r\n",
+          "expected_substrings": ["adityabisht@gmail.com@dummy.com"]
+        },
+        {
+          "input": "to:Aditya Bisht <@gmail.com@dummy.com>\r\n",
+          "expected_substrings": ["@gmail.com@dummy.com"]
+        }
+      ],
+      "samples_fail": [
+        "subject:to:adityabisht@gmail.com\r\n"
+      ]
+    }
+  ]
+}

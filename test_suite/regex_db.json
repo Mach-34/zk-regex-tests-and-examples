@@ -189,6 +189,26 @@
           ]
         },
         {
+          "input": "1=a 2=b 2=bc 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=b 2=bc 2=c da 1=a 2=cb 2=c 2=b dd",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ]
+        },
+        {
           "input": "1=b 2=bb 2=bc d",
           "expected_substrings": [
             "b",
@@ -1187,6 +1207,169 @@
       "samples_fail": [
         "email was meant for @."
       ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./@]+@[A-Za-z0-9.\\-]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "subject:suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "subject:suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["suegamisora@gmail.com@dummy.com"]
+        },
+        {
+          "input": "subject:@gmail.com@dummy.com",
+          "expected_substrings": ["@gmail.com@dummy.com"]
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./]+@"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9.\\-@]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["gmail.com"]
+        },
+        {
+          "input": "suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["gmail.com@dummy.com"]
+        },
+        {
+          "input": "@gmail.com@dummy.com",
+          "expected_substrings": ["dummy.com"]
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)message-id:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "<[A-Za-z0-9=@\\.\\+_-]+>"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"]
+        },
+        {
+          "input": "dummy\r\nmessage-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"]
+        }
+      ],
+      "samples_fail": ["to:message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n"]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)subject:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[^\\r\\n]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 100,
+      "samples_pass": [
+        {
+          "input": "subject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."]
+        },
+        {
+          "input": "dummy\r\nsubject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."]
+        },
+        {
+          "input": "subject:これはテストです。\r\n",
+          "expected_substrings": ["これはテストです。"]
+        }
+      ],
+      "samples_fail": ["\r\nto:subject:This is a subject in To field.\r\n"]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+t="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[0-9]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"]
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"]
+        }
+      ],
+      "samples_fail": ["to:dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="]
     }
   ]
 }
