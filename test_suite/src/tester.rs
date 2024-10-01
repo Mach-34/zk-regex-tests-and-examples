@@ -308,6 +308,7 @@ fn test_random_samples_gen_substrs(
     for _ in 0..constants::DEFAULT_SAMPLE_NUMBER {
         let mut substrings = Vec::<String>::new();
         let mut total_string = String::new();
+        let mut valid_sample = true;
 
         for part in regex_parts {
             // Create the regex for this part
@@ -315,31 +316,41 @@ fn test_random_samples_gen_substrs(
             let sample = match regex_part {
                 Ok(regex_part) => regex_part.sample(&mut rng),
                 Err(err) => {
-                    log::error!(
+                    log::info!(
                         "ignoring the random testing - 
                 the random samples were not generated due to the following error: {:?}",
                         err
                     );
+                    valid_sample = false;
                     String::new()
                 }
             };
 
-            if part.is_public {
-                substrings.push(sample.clone());
+            // If any of the parts wasn't generated correctly we consider it an invalid sample and
+            // it will be ignored
+            if valid_sample {
+                if part.is_public {
+                    substrings.push(sample.clone());
+                }
+                // Concatenate this sample to the total_string
+                total_string.push_str(&sample);
             }
-            // Concatenate this sample to the total_string
-            total_string.push_str(&sample);
         }
 
         let input_with_substring = InputWithSubstrs {
             input: total_string.clone(),
-            expected_substrings: substrings,
+            // Don't pass empty substrings
+            expected_substrings: substrings.into_iter().filter(|s| !s.is_empty()).collect(),
         };
-        let test_passed = run_single_gen_substr_test(code, &input_with_substring)?;
-        if test_passed {
-            random_samples_correct.push(total_string);
-        } else {
-            incorrect_substring_tests.push(total_string);
+
+        // Ignore empty samples
+        if !input_with_substring.input.is_empty() {
+            let test_passed = run_single_gen_substr_test(code, &input_with_substring)?;
+            if test_passed {
+                random_samples_correct.push(total_string);
+            } else {
+                incorrect_substring_tests.push(total_string);
+            }
         }
     }
 
@@ -363,14 +374,18 @@ fn test_for_random_samples(
                 .collect::<Vec<String>>()
         }
         Err(err) => {
-            log::error!(
+            log::info!(
                 "ignoring the random testing - 
                 the random samples were not generated due to the following error: {:?}",
                 err
             );
             Vec::new()
         }
-    };
+    }
+    .into_iter()
+    .filter(|s| !s.is_empty()) // Filter out empty strings
+    .collect();
+
     let (random_samples_correct, random_samples_wrong) =
         evaluate_test_set(code, &regex_input.regex.complete_regex(), &random_samples)?;
     Ok((random_samples_correct, random_samples_wrong))

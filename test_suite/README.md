@@ -57,3 +57,8 @@
 $ RUST_LOG=info cargo run
 ```
 
+## Limitations
+
+For some regexes the random sampling is not possible, because the sampling library is limited. For example the end anchor (`$`) is not supported. 
+
+Random sample testing for the `gen_substrs` setting is only support for `decomposed`. In the `raw` setting, the substrings are determined via a json file that contains the transition information. Determining what the substring parts are, would be quite involved since it requires building the DFA. 

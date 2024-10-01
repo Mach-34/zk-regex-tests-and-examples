@@ -8,11 +8,31 @@
       "input_size": 16,
       "samples_pass": [
         "mabab-cdcde",
-        "ma-ce"
+        "ma-ce",
+        "ma-cde",
+        "mbb-cde",
+        "mabab-cde",
+        "mab-cde",
+        "maaaa-cde",
+        "mb-ce",
+        "mbb-cdce",
+        "mab-ccde",
+        "ma-dddddddddddddce",
+        "mbbbbb-cce"
       ],
       "samples_fail": [
         "sdjfalsdjflasjf",
-        "slafjsajdflasjd"
+        "slafjsajdflasjd",
+        "mabcde",
+        "mab-cd",
+        "mab-cef",
+        "mab-cd-ee",
+        "ma-cceee",
+        "ma-ce ",
+        "m--ce",
+        "ma--ce",
+        "mab-ccez",
+        "mac-ce"
       ]
     },
     {
@@ -20,21 +40,42 @@
         "decomposed": [
           {
             "is_public": false,
-            "regex_def": "ab"
+            "regex_def": "x[0-9]{2}"
           },
           {
-            "is_public": true,
-            "regex_def": "cd"
+            "is_public": false,
+            "regex_def": "-y{2,3}"
+          },
+          {
+            "is_public": false,
+            "regex_def": "_z$"
           }
         ]
       },
       "input_size": 16,
       "samples_pass": [
-        "abcd"
+        "x12-yy_z",
+        "x99-yyy_z",
+        "x00-yy_z",
+        "x45-yyy_z",
+        "x01-yy_z",
+        "x78-yyy_z",
+        "x34-yy_z",
+        "x89-yyy_z",
+        "x23-yy_z",
+        "x67-yyy_z"
       ],
       "samples_fail": [
-        "abw",
-        "cdf"
+        "x123-yyy_z",
+        "x12-y_z",
+        "x12-yyy",
+        "x1-yyy_z",
+        "x12-yy_zz",
+        "x12-yyy_x",
+        "x12yy_z",
+        "12-yy_z",
+        "x12-y_zzz",
+        "x12--yy_z"
       ]
     },
     {
@@ -55,21 +96,55 @@
       "input_size": 30,
       "samples_pass": [
         {
-          "input": "email was meant for @test",
-          "expected_substrings": [
-            "test"
-          ]
+          "input": "email was meant for @alice",
+          "expected_substrings": ["alice"]
         },
         {
-          "input": "email was meant for @noir",
-          "expected_substrings": [
-            "noir"
-          ]
+          "input": "email was meant for @bob",
+          "expected_substrings": ["bob"]
+        },
+        {
+          "input": "email was meant for @charlie",
+          "expected_substrings": ["charlie"]
+        },
+        {
+          "input": "email was meant for @dave",
+          "expected_substrings": ["dave"]
+        },
+        {
+          "input": "email was meant for @eve",
+          "expected_substrings": ["eve"]
+        },
+        {
+          "input": "email was meant for @zoe",
+          "expected_substrings": ["zoe"]
+        },
+        {
+          "input": "email was meant for @eth",
+          "expected_substrings": ["eth"]
+        },
+        {
+          "input": "email was meant for @blockchain",
+          "expected_substrings": ["blockchain"]
+        },
+        {
+          "input": "email was meant for @smartcontract",
+          "expected_substrings": ["smartcontract"]
+        },
+        {
+          "input": "email was meant for @validator",
+          "expected_substrings": ["validator"]
         }
       ],
       "samples_fail": [
-        "abw",
-        "cdf"
+        "email was meant for @123",
+        "email was meant for @!",
+        "email was meant for test",
+        "email was meant for @",
+        "email was meant for @Test",
+        "emailwasmeantfor@alice",
+        "meant for @bob",
+        "email meant for @smartcontract"
       ]
     },
     {
@@ -109,6 +184,43 @@
       "input_size": 16,
       "samples_pass": [
         {
+          "input": "1=a 2=b d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=b 2=bc 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=b 2=bc 2=c da 1=a 2=cb 2=c 2=b dd",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=bb 2=bc d",
+          "expected_substrings": [
+            "b",
+            "bb",
+            "bc",
+            "d"
+          ]
+        },
+        {
           "input": "1=a 2=bbbbbc d",
           "expected_substrings": [
             "a",
@@ -125,12 +237,1177 @@
             "bb",
             "d"
           ]
+        },
+        {
+          "input": "1=a 2=bc d",
+          "expected_substrings": [
+            "a",
+            "bc",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=bb d",
+          "expected_substrings": [
+            "b",
+            "bb",
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=b 2=b 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "b",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=c d",
+          "expected_substrings": [
+            "b",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=bb 2=ccc d",
+          "expected_substrings": [
+            "a",
+            "bb",
+            "ccc",
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=b 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=bbbbbb d",
+          "expected_substrings": [
+            "b",
+            "bbbbbb",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=bbbbb 2=bc 2=c d",
+          "expected_substrings": [
+            "b",
+            "bbbbb",
+            "bc",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "input": "1=b 2=ccc d",
+          "expected_substrings": [
+            "b",
+            "ccc",
+            "d"
+          ]
+        },
+        {
+          "input": "1=a 2=bc 2=bc 2=b d",
+          "expected_substrings": [
+            "a",
+            "bc",
+            "bc",
+            "b",
+            "d"
+          ]
         }
       ],
       "samples_fail": [
-        "sdjfalsdjflasjf",
-        "slafjsajdflasjd"
+        "1=a 2=abc d",
+        "1=c 2=b d",
+        "1=a 2=bb ",
+        "1=a 2=bb 3=c d",
+        "1=b 2=abc d",
+        "1=a d",
+        "1=b 2= d",
+        "2=b 1=a d",
+        "1=a 2=cccx d",
+        "aaa",
+        "1=a2=cd",
+        "1=a 2=b"
       ]
+    },
+    {
+      "regex": {
+        "decomposed":  [
+              {
+                  "is_public": false,
+                  "regex_def": "x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "a*"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "xb", 
+          "expected_substrings": []
+        },
+        { 
+          "input": "xab", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "xaab", 
+          "expected_substrings": ["aa"]
+        },
+        { 
+          "input": "710xab98", 
+          "expected_substrings": ["a"]
+        }
+      ],
+      "samples_fail": [
+        "xaaa",
+        "aaabx"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "b*"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "aaa", 
+          "expected_substrings": []
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["b"]
+        },
+        { 
+          "input": "abbba", 
+          "expected_substrings": ["bbb"]
+        },
+        { 
+          "input": "717abb9", 
+          "expected_substrings": ["bb"]
+        }
+      ],
+      "samples_fail": [
+        "bbb",
+        "19bd7"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(x|y)*"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": []
+        },
+        { 
+          "input": "xaxxyxby", 
+          "expected_substrings": ["xxyx"]
+        }
+      ],
+      "samples_fail": [
+        "axyxyyyx",
+        "xyyxxyba"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "^a"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "a", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "abnjknda", 
+          "expected_substrings": ["a"]
+        }
+      ],
+      "samples_fail": [
+        "ba",
+        "bav"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "^(a|b|c)"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "abc", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "bca", 
+          "expected_substrings": ["b"]
+        },
+        { 
+          "input": "cab", 
+          "expected_substrings": ["c"]
+        }
+      ],
+      "samples_fail": [
+        "7abc9mna"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(^|a)"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "b+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "bb817267", 
+          "expected_substrings": ["bb"]
+        },
+        { 
+          "input": "818abbb9", 
+          "expected_substrings": ["bbb"]
+        }
+      ],
+      "samples_fail": [
+        "81b"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(a|b)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "xabaaabb", 
+          "expected_substrings": ["abaaabb"]
+        },
+        { 
+          "input": "xbaab82a", 
+          "expected_substrings": ["baab"]
+        },
+        { 
+          "input": "7w1\nxabb", 
+          "expected_substrings": ["abb"]
+        },
+        { 
+          "input": "7w\nxbbb9", 
+          "expected_substrings": ["bbb"]
+        }
+      ],
+      "samples_fail": [
+        "7w1nxaba",
+        "abba\nx"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "[^abc]+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "xdefabc1", 
+          "expected_substrings": ["def"]
+        },
+        { 
+          "input": "9\nx9eabc", 
+          "expected_substrings": ["9e"]
+        }
+      ],
+      "samples_fail": [
+        "xabc",
+        "1\ndef",
+        "a8abc8",
+        "71\na81ma"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a[bc]$"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["ab"]
+        }
+      ],
+      "samples_fail": [
+        "abg",
+        "18abcg"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "a[bc]$"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "xab", 
+          "expected_substrings": ["ab"]
+        },
+        { 
+          "input": "ak\nxab", 
+          "expected_substrings": ["ab"]
+        }
+      ],
+      "samples_fail": [
+        "abg", 
+        "\nabg"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "."
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "a", 
+          "expected_substrings": ["a"]
+        }
+      ],
+      "samples_fail": [
+        ""
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "."
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "a6b", 
+          "expected_substrings": ["6"]
+        }
+      ],
+      "samples_fail": [
+        "819nc8b8",
+        "78aa6cc8"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": "Latin-Extension="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[¡-ƿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Greek="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[Ͱ-Ͽ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Cyrillic="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[Ѐ-ӿ]+"
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "Latin-Extension=Ʃƣƙ Greek=ϕω Cyrillic=иЩ Arabic=أبت Devanagari=आदित्य Hiragana&Katakana=なツ",
+          "expected_substrings": ["Ʃƣƙ", "ϕω", "иЩ"]
+        }
+      ],
+      "samples_fail": [
+        "A",
+        "Z",
+        "1"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": " Arabic="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[؀-ۿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Devanagari="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[ऀ-ॿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Hiragana&Katakana="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[ぁ-ヿ]+"
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "Latin-Extension=Ʃƣƙ Greek=ϕω Cyrillic=иЩ Arabic=أبت Devanagari=आदित्य Hiragana&Katakana=なツ",
+          "expected_substrings": ["أبت", "आदित्य", "なツ"]
+        }
+      ],
+      "samples_fail": [
+        "A",
+        "Z",
+        "1"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "( )?(c|C)ode( )?(0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "Re: Accept guardian request for 0x04884491560f38342C56E26BDD0fEAbb68E2d2FC Code 01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76",
+          "expected_substrings": [" Code 01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76"]
+        }
+      ],
+      "samples_fail": [
+        "codex",
+        "Cod12G"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a:"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "[^abcdefghijklmnopqrstuvwxyz\\.]+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "\\."
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        { 
+          "input": "a: ABCDEFG XYZ.",
+          "expected_substrings": [" ABCDEFG XYZ"]
+        },
+        { 
+          "input": "a: CRIPTOGRAFíA.",
+          "expected_substrings": [" CRIPTOGRAFíA"]
+        },
+        { 
+          "input": "a: あいう.",
+          "expected_substrings": [" あいう"]
+        },
+        { 
+          "input": "a: التشفير.",
+          "expected_substrings": [" التشفير"]
+        }
+      ],
+      "samples_fail": [
+        "a:abc.",
+        "a:xyz."
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "[^ab]"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "abdefia",
+          "expected_substrings": ["d"]
+        }
+      ],
+      "samples_fail": [
+        "a"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "aaaab", 
+          "expected_substrings": ["aaaa"]
+        },
+        { 
+          "input": "7aab89ac", 
+          "expected_substrings": ["aa"]
+        }
+      ],
+      "samples_fail": [
+        "b",
+        "aacaadae",
+        "aaaaaaaa"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(b|c)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["b"]
+        },
+        { 
+          "input": "ac", 
+          "expected_substrings": ["c"]
+        },
+        { 
+          "input": "abccbbcc", 
+          "expected_substrings": ["bccbbcc"]
+        },
+        { 
+          "input": "7abbcaa", 
+          "expected_substrings": ["bbc"]
+        }
+      ],
+      "samples_fail": [
+        "adefghij"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(bc)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "abcbcbc", 
+          "expected_substrings": ["bcbcbc"]
+        },
+        { 
+          "input": "acbabcbc", 
+          "expected_substrings": ["bcbc"]
+        },
+        { 
+          "input": "abccbcbb", 
+          "expected_substrings": ["bc"]
+        }
+      ],
+      "samples_fail": [
+        "abab"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "(12|345)+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "1234512b", 
+          "expected_substrings": ["1234512"]
+        },
+        { 
+          "input": "2134512b", 
+          "expected_substrings": ["34512"]
+        }
+      ],
+      "samples_fail": [
+        "1234b",
+        "34512"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a?"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "b", 
+          "expected_substrings": []
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "199aabb", 
+          "expected_substrings": ["a"]
+        }
+      ],
+      "samples_fail": [
+        "aaaaaaaa",
+        "cccccccc"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "(1x?2)+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "12b", 
+          "expected_substrings": ["12"]
+        },
+        { 
+          "input": "11x2bb", 
+          "expected_substrings": ["1x2"]
+        }
+      ],
+      "samples_fail": [
+        "1x2",
+        "1xb"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "12"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(a|b)?"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "c"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "12c", 
+          "expected_substrings": []
+        },
+        { 
+          "input": "12ac", 
+          "expected_substrings": ["a"]
+        },
+        { 
+          "input": "12bc", 
+          "expected_substrings": ["b"]
+        },
+        { 
+          "input": "12a12bc1", 
+          "expected_substrings": ["b"]
+        }
+      ],
+      "samples_fail": [
+        "1ac",
+        "12abc",
+        "12a12b"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "aba"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "aba", 
+          "expected_substrings": ["aba"]
+        },
+        { 
+          "input": "7abaab9", 
+          "expected_substrings": ["aba"]
+        }
+      ],
+      "samples_fail": [
+        "aca",
+        "aaa"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a[ab]"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 16,
+      "samples_pass": [
+        { 
+          "input": "aa", 
+          "expected_substrings": ["aa"]
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["ab"]
+        },
+        { 
+          "input": "aba", 
+          "expected_substrings": ["ab"]
+        }
+      ],
+      "samples_fail": [
+        "ac",
+        "bad"
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": "email was meant for @"
+            },
+            {
+              "is_public": true,
+              "regex_def": "[a-zA-Z0-9_]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": "\\."
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        { 
+          "input": "email was meant for @zkRegex.", 
+          "expected_substrings": ["zkRegex"]
+        }
+      ],
+      "samples_fail": [
+        "email was meant for @."
+      ]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./@]+@[A-Za-z0-9.\\-]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "subject:suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"]
+        },
+        {
+          "input": "subject:suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["suegamisora@gmail.com@dummy.com"]
+        },
+        {
+          "input": "subject:@gmail.com@dummy.com",
+          "expected_substrings": ["@gmail.com@dummy.com"]
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./]+@"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9.\\-@]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["gmail.com"]
+        },
+        {
+          "input": "suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["gmail.com@dummy.com"]
+        },
+        {
+          "input": "@gmail.com@dummy.com",
+          "expected_substrings": ["dummy.com"]
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)message-id:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "<[A-Za-z0-9=@\\.\\+_-]+>"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"]
+        },
+        {
+          "input": "dummy\r\nmessage-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"]
+        }
+      ],
+      "samples_fail": ["to:message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n"]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)subject:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[^\\r\\n]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 100,
+      "samples_pass": [
+        {
+          "input": "subject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."]
+        },
+        {
+          "input": "dummy\r\nsubject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."]
+        },
+        {
+          "input": "subject:これはテストです。\r\n",
+          "expected_substrings": ["これはテストです。"]
+        }
+      ],
+      "samples_fail": ["\r\nto:subject:This is a subject in To field.\r\n"]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+t="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[0-9]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 30,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"]
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"]
+        }
+      ],
+      "samples_fail": ["to:dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="]
+    },
+    {
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+bh="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[a-zA-Z0-9+/=]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 50,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="]
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="]
+        }
+      ],
+      "samples_fail": ["\r\nto: dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="]
     }
   ]
 }
