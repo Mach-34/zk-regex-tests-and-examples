@@ -542,7 +542,7 @@
         "decomposed": [
               {
                   "is_public": false,
-                  "regex_def": "(\\n|^)x"
+                  "regex_def": "(\n|^)x"
               },
               {
                   "is_public": true,
@@ -580,7 +580,7 @@
         "decomposed": [
               {
                   "is_public": false,
-                  "regex_def": "(\\n|^)x"
+                  "regex_def": "(\n|^)x"
               },
               {
                   "is_public": true,
@@ -634,7 +634,7 @@
         "decomposed": [
               {
                   "is_public": false,
-                  "regex_def": "(\\n|^)x"
+                  "regex_def": "(\n|^)x"
               },
               {
                   "is_public": true,
@@ -1275,7 +1275,7 @@
         "decomposed": [
           {
             "is_public": false,
-            "regex_def": "(\\r\\n|^)message-id:"
+            "regex_def": "(\r\n|^)message-id:"
           },
           {
             "is_public": true,
@@ -1283,7 +1283,7 @@
           },
           {
             "is_public": false,
-            "regex_def": "\\r\\n"
+            "regex_def": "\r\n"
           }
         ]
       },
@@ -1306,15 +1306,15 @@
         "decomposed": [
           {
             "is_public": false,
-            "regex_def": "(\\r\\n|^)subject:"
+            "regex_def": "(\r\n|^)subject:"
           },
           {
             "is_public": true,
-            "regex_def": "[^\\r\\n]+"
+            "regex_def": "[^\r\n]+"
           },
           {
             "is_public": false,
-            "regex_def": "\\r\\n"
+            "regex_def": "\r\n"
           }
         ]
       },
@@ -1341,7 +1341,7 @@
         "decomposed": [
           {
             "is_public": false,
-            "regex_def": "(\\r\\n|^)dkim-signature:"
+            "regex_def": "(\r\n|^)dkim-signature:"
           },
           {
             "is_public": false,
@@ -1376,7 +1376,7 @@
         "decomposed": [
           {
             "is_public": false,
-            "regex_def": "(\\r\\n|^)dkim-signature:"
+            "regex_def": "(\r\n|^)dkim-signature:"
           },
           {
             "is_public": false,
