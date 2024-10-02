@@ -1,3 +1,0 @@
-acir_opcodes,circuit_size,regex,with_gen_substr
-114,17865,email was meant for @[a-z]+,true
-59,7808,1=(a|b) (2=(b|c)+ )+d,true

@@ -1,1 +1,1 @@
-{"parts":[{"is_public":false,"regex_def":"email was meant for @"},{"is_public":true,"regex_def":"[a-z]+"}]}
+{"parts":[{"is_public":false,"regex_def":"ab"},{"is_public":true,"regex_def":"cd"}]}

@@ -1,9 +1,8 @@
 {
-  "bench_all": false,
   "database": [
     {
       "regex": {
-        "raw": "m(a|b)+-(c|d)+e"
+        "raw": "m(a|b)+-(c|d)+e$"
       },
       "input_size": 16,
       "samples_pass": [
@@ -91,7 +90,6 @@
           }
         ]
       },
-      "with_bench": true,
       "gen_substrs": true,
       "input_size": 30,
       "samples_pass": [
@@ -179,7 +177,6 @@
           }
         }
       },
-      "with_bench": true,
       "gen_substrs": true,
       "input_size": 16,
       "samples_pass": [
