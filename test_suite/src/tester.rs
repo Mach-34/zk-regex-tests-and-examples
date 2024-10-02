@@ -151,11 +151,10 @@ impl SubstringTestResult {
 
 /// Tests a given regex:
 /// - against randomly generate samples. Checks that they give the same outcome for Noir as for a Rust regex lib
-///     (the random samples are assumed to pass in both).
-///     Additionally, for the substrs case, the correctness of the substring output is also checked.
-/// - against (user) input samples, of both passing and failing inputs.
-///
-/// Note: raw + gen_substrs case does *not* get tested with randomly generated samples, because these are too difficult to generate.
+///     (the random samples are assumed to pass in both)
+///     Additionally, for the substrs case, the correctness of the substring output is also checked
+/// - against (user) input samples, of both passing and failing inputs
+/// Note: raw + gen_substrs case does *not* get tested with randomly generated samples, because these are too difficult to generate
 pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<TestResult> {
     let test_result = match &regex_input.samples_pass {
         SamplesPass::WithSubstrs(samples) => {
