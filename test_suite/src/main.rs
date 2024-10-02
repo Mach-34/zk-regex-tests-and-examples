@@ -4,23 +4,33 @@ mod constants;
 mod db;
 mod tester;
 
+use bench::{execute_count_gate_command, BenchReport};
+use clap::Parser;
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
 use std::{error::Error, path::Path};
 use tester::test_regex;
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Optional path to the regex database file
+    #[arg(long, short, default_value_t = String::from(constants::DEFAULT_DATABASE_PATH))]
+    db: String,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
-
+    // Parse command-line arguments
+    let args = Args::parse();
     info!("starting regex tests");
-
-    // Reads the database
-    let database =
-        RegexDb::load_from_file(Path::new(constants::DEFAULT_DATABASE_PATH)).map_err(|err| {
-            error!("error creating the database: {}", err);
-            err
-        })?;
+    // Reads the database from the given path or use the default one
+    let database_path = Path::new(&args.db);
+    let database = RegexDb::load_from_file(database_path).map_err(|err| {
+        error!("error creating the database: {}", err);
+        err
+    })?;
 
     for regex_input in database {
         info!("testing regex {}", regex_input.regex.complete_regex());

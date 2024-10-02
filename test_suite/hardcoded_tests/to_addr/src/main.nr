@@ -37,7 +37,7 @@ fn regex_match<let N: u32>(input: [u8; N]) -> BoundedVec<Field, N> {
     res
 }
 
-fn main(input: [u8; 100]) {
+fn main(input: [u8; 1024]) {
     let res = regex_match(input);
 }
 
