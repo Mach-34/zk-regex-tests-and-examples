@@ -8,6 +8,8 @@ To follow this example, you should have the following tools installed in your sy
 - zk-regex. To install this, follow the instructions in the [documentation](https://github.com/zkemail/zk-regex?tab=readme-ov-file#install).
 - Noir. You can install this using the [installation instructions](https://noir-lang.org/docs/getting_started/installation/).
 
+Note that this example has been generated using [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/hc_improvements) of zk-regex with Noir support. 
+
 ## Generating the Noir circuit automatically
 Suppose you want to prove that an input string fulfills the regex `m(a|b)+-(c|d)+e` in your project. First, you need to create your project using the command
 ```
@@ -22,69 +24,12 @@ The first step is to generate the Noir code for the provided regex. To do this, 
 $ zk-regex raw --raw-regex "m(a|b)+-(c|d)+e" --noir-file-path "auto_code.nr"
 ```
 
-Once the command is executed, it will generate the file `auto_code.nr` that contains the following source code:
-```rust
-global table = make_lookup_table();
-pub fn regex_match<let N: u32>(input: [u8; N]) {
-    let mut s = 0;
-    for i in 0..input.len() {
-        s = table[s * 256 + input[i] as Field];
-    }
-    assert_eq(s, 5, f"no match: {s}");
-}
-    
-        
-comptime fn make_lookup_table() -> [Field; 1536] {
-    let mut table = [0; 1536];
-    table[0 * 256 + 109] = 1;
-    table[1 * 256 + 97] = 2;
-    table[1 * 256 + 98] = 2;
-    table[2 * 256 + 97] = 2;
-    table[2 * 256 + 98] = 2;
-    table[2 * 256 + 45] = 3;
-    table[3 * 256 + 99] = 4;
-    table[3 * 256 + 100] = 4;
-    table[4 * 256 + 99] = 4;
-    table[4 * 256 + 100] = 4;
-    table[4 * 256 + 101] = 5;
+Once the command is executed, it will generate the file `auto_code.nr`, which you can find in this example folder as well. 
 
-    for i in 0..256 {
-        table[5 * 256 + i] = 5;
-    }
-    table
-}
-```
 This source code must be copied into your code for use. Let us say that you should include the generated source code in the `main.nr` file in your project. Then you need to copy the content from `auto_code.nr` into `own_project/src/main.nr`. Also, you will need to modify your `main.nr` file to receive the input string and evaluate the regex:
 
 ```rust
-global table = make_lookup_table();
-pub fn regex_match<let N: u32>(input: [u8; N]) {
-    let mut s = 0;
-    for i in 0..input.len() {
-        s = table[s * 256 + input[i] as Field];
-    }
-    assert_eq(s, 5, f"no match: {s}");
-}
-
-comptime fn make_lookup_table() -> [Field; 1536] {
-    let mut table = [0; 1536];
-    table[0 * 256 + 109] = 1;
-    table[1 * 256 + 97] = 2;
-    table[1 * 256 + 98] = 2;
-    table[2 * 256 + 97] = 2;
-    table[2 * 256 + 98] = 2;
-    table[2 * 256 + 45] = 3;
-    table[3 * 256 + 99] = 4;
-    table[3 * 256 + 100] = 4;
-    table[4 * 256 + 99] = 4;
-    table[4 * 256 + 100] = 4;
-    table[4 * 256 + 101] = 5;
-
-    for i in 0..256 {
-        table[5 * 256 + i] = 5;
-    }
-    table
-}
+// ...code from auto_code.nr...
 
 fn main(input: [u8; 16]) {
     regex_match(input);

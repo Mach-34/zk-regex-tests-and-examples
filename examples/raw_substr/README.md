@@ -12,7 +12,7 @@ Apart from matching a regex, there is the feature to match regex and additionall
 
 Refer to [Noir's docs](https://noir-lang.org/docs/getting_started/installation/) and [BB instructions](https://github.com/AztecProtocol/aztec-packages/blob/master/barretenberg%2Fcpp%2Fsrc%2Fbarretenberg%2Fbb%2Freadme.md#installation) for installation steps.
 
-Currently Noir support for zk-regex is a [WIP](https://github.com/olehmisar/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/gen_substrs). 
+Currently Noir support for zk-regex is a [WIP](https://github.com/noir-lang/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/hc_improvements).  
 
 ## Usage
 
