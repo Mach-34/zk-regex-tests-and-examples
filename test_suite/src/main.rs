@@ -1,9 +1,11 @@
+mod bench;
 mod code;
 mod compiler;
 mod constants;
 mod db;
 mod tester;
 
+use bench::{execute_count_gate_command, BenchReport};
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
@@ -22,6 +24,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             err
         })?;
 
+    let benchmark_all = database.bench_all;
+    let mut bench_report = BenchReport::default();
     for regex_input in database {
         info!("testing regex {}", regex_input.regex.complete_regex());
         let mut code_read_result = Code::new(&regex_input);
@@ -46,7 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match test_regex(&regex_input, code) {
                     Ok(test_result) => {
                         info!(
-                            "Test passed correctly for regex {}:\n{}",
+                            "test passed correctly for regex {}:\n{}",
                             regex_input.regex.complete_regex(),
                             test_result
                         );
@@ -62,6 +66,24 @@ fn main() -> Result<(), Box<dyn Error>> {
                         None => error!("error downcasting the anyhow::Error"),
                     },
                 }
+                if regex_input.with_bench || benchmark_all {
+                    match execute_count_gate_command() {
+                        Ok(mut bench_result) => {
+                            info!("benchmark results:\n{}", bench_result);
+                            // Changes the data needed to write the report.
+                            bench_result.regex = regex_input.regex.complete_regex();
+                            bench_result.with_gen_substr = regex_input.gen_substrs;
+                            bench_report.push_result(bench_result);
+                        }
+                        Err(err) => {
+                            error!(
+                                "error running the benchmark for regex {}: {:?}",
+                                regex_input.regex.complete_regex(),
+                                err
+                            )
+                        }
+                    }
+                }
             }
             Err(err) => match err.downcast_ref() {
                 Some(code::Error::CodeGenerationFailed(console_msg)) => {
@@ -70,6 +92,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None => error!("error downcasting the anyhow::Error"),
             },
         }
+    }
+
+    // Save the bench results.
+    if !bench_report.is_empty() {
+        info!("saving benchmark results into CSV");
+        bench_report.save(Path::new(constants::DEFAULT_BENCH_RESULT_FILE))?;
     }
 
     Ok(())
