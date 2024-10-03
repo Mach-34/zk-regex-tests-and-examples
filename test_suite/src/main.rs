@@ -19,6 +19,12 @@ struct Args {
     /// Optional path to the regex database file
     #[arg(long, short, default_value_t = String::from(constants::DEFAULT_DATABASE_PATH))]
     db: String,
+    /// If you want to run the testing
+    #[arg(long, short)]
+    test: bool,
+    /// If you want to run the benchmarking
+    #[arg(long, short)]
+    bench: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -56,40 +62,44 @@ fn main() -> Result<(), Box<dyn Error>> {
                         continue;
                     }
                 }
-                match test_regex(&regex_input, code) {
-                    Ok(test_result) => {
-                        info!(
-                            "test passed correctly for regex {}:\n{}",
-                            regex_input.regex.complete_regex(),
-                            test_result
-                        );
-                    }
-                    Err(err) => match err.downcast_ref() {
-                        Some(tester::Error::TestFailed(test_result)) => {
-                            error!(
-                                "test failed for regex {}:\n{}",
+                if args.test {
+                    match test_regex(&regex_input, code) {
+                        Ok(test_result) => {
+                            info!(
+                                "test passed correctly for regex {}:\n{}",
                                 regex_input.regex.complete_regex(),
                                 test_result
-                            )
+                            );
                         }
-                        None => error!("error downcasting the anyhow::Error"),
-                    },
+                        Err(err) => match err.downcast_ref() {
+                            Some(tester::Error::TestFailed(test_result)) => {
+                                error!(
+                                    "test failed for regex {}:\n{}",
+                                    regex_input.regex.complete_regex(),
+                                    test_result
+                                )
+                            }
+                            None => error!("error downcasting the anyhow::Error"),
+                        },
+                    }
                 }
-                if regex_input.with_bench || benchmark_all {
-                    match execute_count_gate_command() {
-                        Ok(mut bench_result) => {
-                            info!("benchmark results:\n{}", bench_result);
-                            // Changes the data needed to write the report.
-                            bench_result.regex = regex_input.regex.complete_regex();
-                            bench_result.with_gen_substr = regex_input.gen_substrs;
-                            bench_report.push_result(bench_result);
-                        }
-                        Err(err) => {
-                            error!(
-                                "error running the benchmark for regex {}: {:?}",
-                                regex_input.regex.complete_regex(),
-                                err
-                            )
+                if args.bench {
+                    if regex_input.with_bench || benchmark_all {
+                        match execute_count_gate_command() {
+                            Ok(mut bench_result) => {
+                                info!("benchmark results:\n{}", bench_result);
+                                // Changes the data needed to write the report.
+                                bench_result.regex = regex_input.regex.complete_regex();
+                                bench_result.with_gen_substr = regex_input.gen_substrs;
+                                bench_report.push_result(bench_result);
+                            }
+                            Err(err) => {
+                                error!(
+                                    "error running the benchmark for regex {}: {:?}",
+                                    regex_input.regex.complete_regex(),
+                                    err
+                                )
+                            }
                         }
                     }
                 }
