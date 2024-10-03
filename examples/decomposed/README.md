@@ -12,7 +12,7 @@ In this example the regex is "this email is meant for @[a-z]+" and we're extract
 
 Refer to [Noir's docs](https://noir-lang.org/docs/getting_started/installation/) and [BB instructions](https://github.com/AztecProtocol/aztec-packages/blob/master/barretenberg%2Fcpp%2Fsrc%2Fbarretenberg%2Fbb%2Freadme.md#installation) for installation steps.
 
-Currently Noir support for zk-regex is a [WIP](https://github.com/olehmisar/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/gen_substrs). 
+Currently Noir support for zk-regex is a [WIP](https://github.com/noir-lang/zk-regex). CLI support for extracting substrings (`gen_substrs`), which we need here, is only available on [this branch](https://github.com/hashcloak/noir-zk-regex/tree/features/hc_improvements). 
 
 ## Usage
 
@@ -75,7 +75,8 @@ fn test_valid() {
     let substrings = regex_match(input);
     // The implementation is general for extraction of x substrings,
     // but we only have 1 here
-    let username = substrings[0];
+    assert(substrings.len() == 1);
+    let username = substrings.get(0);
 
     // Assert it equals "noir"
     assert(username.get(0) == 110);
@@ -104,11 +105,13 @@ $ nargo test
 
 ### Prove & verify
 
+// TODO why do asserts fail?
+
 Let's use the input of the valid test for proving and verifying as well. Create a `main` function:
 ```rust
 fn main(input: [u8; 25], username: [u8; 4]) {
     let substrings = regex_match(input);
-    let extracted_substr = substrings[0];
+    let extracted_substr = substrings.get(0);
 
     // Assert the obtained substring equals the expected username
     for i in 0..4 {
