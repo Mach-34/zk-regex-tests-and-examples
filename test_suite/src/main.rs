@@ -5,8 +5,8 @@ mod constants;
 mod db;
 mod tester;
 
-use bench::{execute_count_gate_command, BenchReport};
-use clap::Parser;
+use bench::{benchmark_noir_code, BenchReport};
+use clap::{Parser, Subcommand};
 use code::Code;
 use db::RegexDb;
 use log::{self, error, info};
@@ -23,8 +23,17 @@ struct Args {
     #[arg(long, short)]
     test: bool,
     /// If you want to run the benchmarking
-    #[arg(long, short)]
-    bench: bool,
+    #[clap(subcommand)]
+    bench: Option<BenchExecType>,
+}
+
+/// Type of the benchmark that you want to execute.
+#[derive(Debug, Subcommand)]
+enum BenchExecType {
+    /// The benchmark will include time execution.
+    WithTime,
+    /// The benchmark will not include time execution.
+    NoTime,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -42,10 +51,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let benchmark_all = database.bench_all;
     let mut bench_report = BenchReport::default();
     for regex_input in database {
-        info!("testing regex {}", regex_input.regex.complete_regex());
         let mut code_read_result = Code::new(&regex_input);
         match &mut code_read_result {
             Ok(code) => {
+                info!("compiling regex {}", regex_input.regex.complete_regex());
                 let _ = code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE));
                 let compilation_result = compiler::compile_noir_project();
                 match compilation_result {
@@ -63,6 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 if args.test {
+                    info!("testing regex {}", regex_input.regex.complete_regex());
                     match test_regex(&regex_input, code) {
                         Ok(test_result) => {
                             info!(
@@ -83,23 +93,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                         },
                     }
                 }
-                if args.bench {
-                    if regex_input.with_bench || benchmark_all {
-                        match execute_count_gate_command() {
-                            Ok(mut bench_result) => {
-                                info!("benchmark results:\n{}", bench_result);
-                                // Changes the data needed to write the report.
-                                bench_result.regex = regex_input.regex.complete_regex();
-                                bench_result.with_gen_substr = regex_input.gen_substrs;
-                                bench_report.push_result(bench_result);
-                            }
-                            Err(err) => {
-                                error!(
-                                    "error running the benchmark for regex {}: {:?}",
-                                    regex_input.regex.complete_regex(),
-                                    err
-                                )
-                            }
+                if args.bench.is_some() && (regex_input.with_bench || benchmark_all) {
+                    info!("bencmarking regex {}", regex_input.regex.complete_regex());
+                    match benchmark_noir_code(
+                        regex_input.input_size,
+                        regex_input.benchmark_str,
+                        args.bench.as_ref().unwrap(),
+                    ) {
+                        Ok(mut bench_result) => {
+                            info!("benchmark results:\n{}", bench_result);
+                            // Changes the data needed to write the report.
+                            bench_result.regex = regex_input.regex.complete_regex();
+                            bench_result.with_gen_substr = regex_input.gen_substrs;
+                            bench_report.push_result(bench_result);
+                        }
+                        Err(err) => {
+                            error!(
+                                "error running the benchmark for regex {}: {:?}",
+                                regex_input.regex.complete_regex(),
+                                err
+                            )
                         }
                     }
                 }

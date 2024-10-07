@@ -114,6 +114,10 @@ pub struct DbEntry {
     /// Defines wether you want a benchmark for the regex in the given test
     #[serde(default)]
     pub with_bench: bool,
+    /// String used for the benchmarking. If you want to benchmark, this field is mandatory.
+    /// If you want just testing, this field is optional.
+    #[serde(default)]
+    pub benchmark_str: String,
 }
 
 impl RegexDb {
@@ -128,10 +132,7 @@ impl RegexDb {
 
         // If the field in the "bench_all" is a boolean, take the boolean,
         // otherwhise, use false as a default.
-        let bench_all: bool = match json_value["bench_all"].as_bool() {
-            Some(flag) => flag,
-            None => false,
-        };
+        let bench_all: bool = json_value["bench_all"].as_bool().unwrap_or(false);
 
         let mut regexes = Vec::new();
 

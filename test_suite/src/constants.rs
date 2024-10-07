@@ -13,6 +13,16 @@ pub const DEFAULT_DECOMPOSED_JSON_FILE: &str = "./decomposed.json";
 /// Default path of the JSON file that stored the transitions of where substrings should be extracted
 pub const DEFAULT_SUBSTRS_JSON_PATH: &str = "./substrs_transitions.json";
 /// Default path of the target folder for the project
-pub const DEFAULT_TARJET_JSON_FILE: &str = "./execution_project/target/execution_project.json";
+pub const DEFAULT_TARJET_JSON_FILE: &str = "./target/execution_project.json";
 /// Default path for bench report
 pub const DEFAULT_BENCH_RESULT_FILE: &str = "./bench_result.csv";
+/// Default path for timing report
+pub const DEFAULT_PROVING_TIME_RESULT_FILE: &str = "./proving_time_resuls.json";
+/// Default witness name
+pub const DEFAULT_WITNESS_NAME: &str = "witness";
+/// Default witness path
+pub const DEFAULT_WITNESS_PATH: &str = "./target/witness.gz";
+/// Default prove path
+pub const DEFAULT_PROOF_PATH: &str = "./target/proof";
+/// Default Prove.toml path.
+pub const DEFAULT_PROVER_TOML_PATH: &str = "./execution_project/Prover.toml";
