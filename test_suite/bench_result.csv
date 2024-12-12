@@ -1,2 +1,37 @@
-acir_opcodes,circuit_size,regex,with_gen_substr,proving_time
-43,3175,(a|b)+c,false,0.18447697588
+acir_opcodes,circuit_size,regex,with_gen_substr
+779,8828,"x[0-9]{2}-y{2,3}_z$",false
+801,19600,email was meant for @[a-z]+,false
+788,9603,1=(a|b) (2=(b|c)+ )+d,false
+781,4220,xa*b,false
+780,3451,ab*,false
+781,4220,a(x|y)*b,false
+782,4221,^a,false
+782,4221,^(a|b|c),false
+782,4221,(^|a)b+,false
+783,4990,(\n|^)x(a|b)+,false
+790,10373,(\n|^)x[^abc]+,false
+772,3445,a[bc]$,false
+775,4984,(\n|^)xa[bc]$,false
+787,8834,.,false
+789,10372,a.b,false
+820,34211,Latin-Extension=[¡-ƿ]+ Greek=[Ͱ-Ͽ]+ Cyrillic=[Ѐ-ӿ]+,false
+827,39594, Arabic=[؀-ۿ]+ Devanagari=[ऀ-ॿ]+ Hiragana&Katakana=[ぁ-ヿ]+,false
+786,8065,( )?(c|C)ode( )?(0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f)+,false
+790,11141,a:[^abcdefghijklmnopqrstuvwxyz\.]+\.,false
+787,8834,[^ab],false
+781,4220,a+b,false
+781,4220,a(b|c)+,false
+782,4989,a(bc)+,false
+784,6527,(12|345)+b,false
+781,4220,a?b,false
+783,5758,(1x?2)+b,false
+783,5758,12(a|b)?c,false
+782,4989,aba,false
+781,4220,a[ab],false
+802,20369,email was meant for @[a-zA-Z0-9_]+\.,false
+782,4989,[A-Za-z0-9!#$%&'*+=?\-\^_`{|}~./@]+@[A-Za-z0-9.\-]+,false
+782,4989,[A-Za-z0-9!#$%&'*+=?\-\^_`{|}~./]+@[A-Za-z0-9.\-@]+,false
+798,16525,(\r\n|^)message-id:<[A-Za-z0-9=@\.\+_-]+>\r\n,false
+800,18063,(\r\n|^)subject:[^\r\n]+\r\n,false
+813,28060,(\r\n|^)dkim-signature:([a-z]+=[^;]+; )+t=[0-9]+;,false
+814,28829,(\r\n|^)dkim-signature:([a-z]+=[^;]+; )+bh=[a-zA-Z0-9+/=]+;,false

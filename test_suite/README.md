@@ -2,6 +2,8 @@
 
 This test-suite is a tool for testing and benchmarking the zk-regex library module that generates Noir code to check if certain regex is matched.
 
+In addition, all the tests for which the circom implementation of zk-regex gets tested are implemented. A large part can be ran automatically through the automated testing/benchmarking functionality for which a database has to be provided (and `regex_db_for_bench.json` contains all the necessary testdata) and there are 2 testcases that have been implemented separately in `hardcoded_tests`.  The latter is necessary because for those tests multiple circuits have to be combined manually. 
+
 ## Requirements
 
 - Install zk-regex command following the instructions in the documentation.
@@ -126,8 +128,49 @@ If you want to execute both the testing and the benchmarking you need to follow 
 RUST_LOG=info cargo run -- -t <no-time | with-time>
 ```
 
+## Circom testing compatibility
+
+The file `regex_db_for_bench.json` contains all testcases that the [circom implementation tests](https://github.com/zkemail/zk-regex/tree/main/packages/circom/tests) for and some additional ones. 
+
+The circom tests are contained in `.test.js` files and usually test for various circuits within a single file. In `regex_db_for_bench.json` the information is organized per circuit, but we've added information to link them back to the circom tests. If there's a specific circuit file it relates to, this is indicated with `circuit_name`, otherwise there is a reference in `test_name`. Examples: 
+```json
+"circuit_name": "asterisk1"
+
+"test_name": "simple_regex.test.js"
+``` 
+
+Furthermore, to relate the test inputs to the specific testcases, `circom_testname` is indicated for passing samples, and separately in an array for failing samples. E.g:
+
+```json
+      "samples_pass": [
+        { 
+          "input": "xb", 
+          "expected_substrings": [],
+          "circom_testname": "asterisk1 valid case 1"
+        },
+        { 
+          "input": "xab", 
+          "expected_substrings": ["a"],
+          "circom_testname": "asterisk1 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "xaaa",
+        "aaabx"
+      ],
+      "circom_testnames_fails": [
+        "asterisk1 invalid case 1",
+        "asterisk1 invalid case 2"
+      ]
+```
+
+These labels make it easier to verify whether all circom tests have been implemented. 
+
+Note that as mentioned in the introduction, there are a few tests that are implemented in `hardcoded_tests` as they combine multiple circuits, which cannot be done through the automated process. 
+
 ## Limitations
 
 For some regexes the random sampling is not possible, because the sampling library is limited. For example the end anchor (`$`) is not supported.
 
 Random sample testing for the `gen_substrs` setting is only support for `decomposed`. In the `raw` setting, the substrings are determined via a json file that contains the transition information. Determining what the substring parts are, would be quite involved since it requires building the DFA.
+
