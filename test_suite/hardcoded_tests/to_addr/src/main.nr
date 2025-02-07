@@ -3,7 +3,7 @@
 
 mod to_all;
 mod email_addr;
-mod reversed_bracket;
+// mod reversed_bracket;
 
 fn regex_match<let N: u32>(input: [u8; N]) -> BoundedVec<Field, N> {
     let to_all_substrings = to_all::regex_match(input);
@@ -23,7 +23,7 @@ fn regex_match<let N: u32>(input: [u8; N]) -> BoundedVec<Field, N> {
     // At least 1 of the 2 should return true
     // This extracts the first occurence of an email address between brackets <> of the reversed string
     // (this ensure the last occurrence of an email is extracted)
-    let (email_addr_reversed_bracket_substrings, matched_email_addr_reversed_bracket) = reversed_bracket::regex_match(to_all_arr_reversed);
+    let (email_addr_reversed_bracket_substrings, matched_email_addr_reversed_bracket) = email_addr::regex_match(to_all_arr);
     let (email_addr_subtrings, matched_email_addr) = email_addr::regex_match(to_all_arr);
     
     // If email between "<>" was obtained, return that
@@ -125,7 +125,6 @@ fn test_valid_4() { // "to field from beginning case 4 (non-English string is us
         expected.push(expected_arr[i]);
     }
 
-    // "to: \"末神奏宙\" <adityabisht@gmail.com>\r\n"
     let input4: [u8; 44] = [
         116, 111, 58, 32, 34, 229, 191, 160, 231, 137, 135, 232, 191, 148, 229, 185, 180, 34, 32, 60, 97, 100, 105, 116, 121, 97, 98, 105, 115, 104, 116, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 62, 13, 10
     ];
@@ -188,7 +187,6 @@ fn test_valid_8() { // "to field after new line case 4 (non-English string is us
         expected.push(expected_arr[i]);
     }
 
-    // "dummy\r\nto: \"末神奏宙\" <adityabisht@gmail.com>\r\n"
     let input8: [u8; 51] = [
         100, 117, 109, 109, 121, 13, 10, 116, 111, 58, 32, 34, 229, 191, 160, 231, 137, 135, 232, 191, 148, 229, 185, 180, 34, 32, 60, 97, 100, 105, 116, 121, 97, 98, 105, 115, 104, 116, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 62, 13, 10
     ];

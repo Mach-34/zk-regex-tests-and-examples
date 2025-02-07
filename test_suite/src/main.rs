@@ -54,23 +54,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut code_read_result = Code::new(&regex_input);
         match &mut code_read_result {
             Ok(code) => {
-                info!("compiling regex {}", regex_input.regex.complete_regex());
-                let _ = code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE));
-                let compilation_result = compiler::compile_noir_project();
-                match compilation_result {
-                    Ok(_) => info!(
-                        "compilation success for regex {}",
-                        regex_input.regex.complete_regex()
-                    ),
-                    Err(e) => {
-                        error!(
-                            "error compiling the noir project for regex {}: {:?}",
-                            regex_input.regex.complete_regex(),
-                            e
-                        );
-                        continue;
-                    }
-                }
+                // info!("compiling regex {}", regex_input.regex.complete_regex());
+                // let _ = code.write_to_path(Path::new(constants::DEFAULT_PROJECT_MAIN_FILE));
+                // let compilation_result = compiler::compile_noir_project();
+                // match compilation_result {
+                //     Ok(_) => info!(
+                //         "compilation success for regex {}",
+                //         regex_input.regex.complete_regex()
+                //     ),
+                //     Err(e) => {
+                //         error!(
+                //             "error compiling the noir project for regex {}: {:?}",
+                //             regex_input.regex.complete_regex(),
+                //             e
+                //         );
+                //         continue;
+                //     }
+                // }
                 if args.test {
                     info!("testing regex {}", regex_input.regex.complete_regex());
                     match test_regex(&regex_input, code) {

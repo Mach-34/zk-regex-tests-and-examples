@@ -1,0 +1,46 @@
+{
+  "database": [
+    {
+      "circuit_name": "international_chars_decomposed",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "Latin-Extension="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[¡-ƿ]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": " Greek="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[Ͱ-Ͽ]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": " Cyrillic="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[Ѐ-ӿ]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "Latin-Extension=Ʃƣƙ Greek=ϕω Cyrillic=иЩ Arabic=أبت Devanagari=आदित्य Hiragana&Katakana=なツ",
+          "expected_substrings": ["Ʃƣƙ", "ϕω", "иЩ"],
+          "circom_testname": "case 1"
+        }
+      ],
+      "samples_fail": ["A", "Z", "1"],
+      "circom_testnames_fails": [""]
+    }
+  ]
+}
