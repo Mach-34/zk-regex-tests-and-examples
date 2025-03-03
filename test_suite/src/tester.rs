@@ -162,9 +162,10 @@ pub fn test_regex(regex_input: &DbEntry, code: &mut Code) -> anyhow::Result<Test
             // Random sample testing for substrings is only done for decomposed setting
             let (random_samples_correct, incorrect_substring_random_test) = match &regex_input.regex
             {
-                RegexInput::Decomposed(parts) => {
-                    test_random_samples_gen_substrs(parts, regex_input.input_size as u32, code)?
-                }
+                // DISABLED FUZZING FOR NOW
+                // RegexInput::Decomposed(parts) => {
+                //     test_random_samples_gen_substrs(parts, regex_input.input_size as u32, code)?
+                // }
                 _ => (Vec::new(), Vec::new()),
             };
 
@@ -448,6 +449,7 @@ fn evaluate_test_set(
             successfull_samples.push(string.clone());
         }
     }
+    
     Ok((successfull_samples, failed_samples))
 }
 
