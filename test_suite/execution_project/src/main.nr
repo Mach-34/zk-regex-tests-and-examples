@@ -1696,7 +1696,7 @@ pub unconstrained fn __regex_match<let N: u32>(input: [u8; N]) ->  BoundedVec<Se
         if ((s == 32) & (s_next == 33) | (s == 33) & (s_next == 33)) {
     
             if (consecutive_substr == 0) {
-                current_substring.index = i;
+            current_substring.index = i;
             };
             current_substring.length += 1;
             consecutive_substr = 1; 

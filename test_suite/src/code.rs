@@ -118,7 +118,7 @@ impl Code {
                     input_byte_array.as_bytes(), // Byte array input for the regex
                     expected_substrings.len(),   // Number of expected substrings
                     expected_substrings.len(),    // Assertion: number of substrings
-                    self.input_size // Input size reused for max substring length (just inefficient, not insecure)
+                    input_byte_array.as_bytes().len() // Input size reused for max substring length (just inefficient, not insecure)
                 )
                 .unwrap();
 
@@ -144,7 +144,6 @@ impl Code {
                 .unwrap();
             }
         }
-
         s
     }
 }
