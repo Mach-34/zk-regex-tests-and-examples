@@ -1,4 +1,4 @@
-global table = comptime { make_lookup_table() };
+global table: [Field; 1280] = comptime { make_lookup_table() };
 pub fn regex_match<let N: u32>(input: [u8; N]) -> (Vec<BoundedVec<Field, N>>, bool) {
     // regex: [A-Za-z0-9!#$%&'*+=?\-\^_`{|}~./@]+@[A-Za-z0-9.\-]+
     let mut substrings: Vec<BoundedVec<Field, N>> = Vec::new();

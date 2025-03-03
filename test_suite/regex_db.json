@@ -2,35 +2,1600 @@
   "bench_all": true,
   "database": [
     {
+      "test_name": "other",
       "regex": {
-        "raw": "(a|b)+c"
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "x[0-9]{2}"
+          },
+          {
+            "is_public": false,
+            "regex_def": "-y{2,3}"
+          },
+          {
+            "is_public": false,
+            "regex_def": "_z$"
+          }
+        ]
       },
-      "gen_substrs": false,
-      "input_size": 10,
-      "benchmark_str": "abaabbabac",
+      "input_size": 1024,
+      "samples_pass": [
+        "x12-yy_z",
+        "x99-yyy_z",
+        "x00-yy_z",
+        "x45-yyy_z",
+        "x01-yy_z",
+        "x78-yyy_z",
+        "x34-yy_z",
+        "x89-yyy_z",
+        "x23-yy_z",
+        "x67-yyy_z"
+      ],
+      "samples_fail": [
+        "x123-yyy_z",
+        "x12-y_z",
+        "x12-yyy",
+        "x1-yyy_z",
+        "x12-yy_zz",
+        "x12-yyy_x",
+        "x12yy_z",
+        "12-yy_z",
+        "x12-y_zzz",
+        "x12--yy_z"
+      ]
+    },
+    {
+      "test_name": "other",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "email was meant for @"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[a-z]+"
+          }
+        ]
+      },
+      "with_bench": true,
+      "gen_substrs": true,
+      "input_size": 1024,
       "samples_pass": [
         {
-          "input": "subject:This is a test.\r\n",
-          "expected_substrings": [
-            "This is a test."
-          ]
+          "input": "email was meant for @alice",
+          "expected_substrings": ["alice"]
         },
         {
-          "input": "dummy\r\nsubject:This is a test.\r\n",
-          "expected_substrings": [
-            "This is a test."
-          ]
+          "input": "email was meant for @bob",
+          "expected_substrings": ["bob"]
         },
         {
-          "input": "subject:これはテストです。\r\n",
-          "expected_substrings": [
-            "これはテストです。"
-          ]
+          "input": "email was meant for @charlie",
+          "expected_substrings": ["charlie"]
+        },
+        {
+          "input": "email was meant for @dave",
+          "expected_substrings": ["dave"]
+        },
+        {
+          "input": "email was meant for @eve",
+          "expected_substrings": ["eve"]
+        },
+        {
+          "input": "email was meant for @zoe",
+          "expected_substrings": ["zoe"]
+        },
+        {
+          "input": "email was meant for @eth",
+          "expected_substrings": ["eth"]
+        },
+        {
+          "input": "email was meant for @blockchain",
+          "expected_substrings": ["blockchain"]
+        },
+        {
+          "input": "email was meant for @smartcontract",
+          "expected_substrings": ["smartcontract"]
+        },
+        {
+          "input": "email was meant for @validator",
+          "expected_substrings": ["validator"]
         }
       ],
       "samples_fail": [
-        "\r\nto:subject:This is a subject in To field.\r\n"
+        "email was meant for @123",
+        "email was meant for @!",
+        "email was meant for test",
+        "email was meant for @",
+        "email was meant for @Test",
+        "emailwasmeantfor@alice",
+        "meant for @bob",
+        "email meant for @smartcontract"
       ]
+    },
+    {
+      "test_name": "simple_regex.test.js",
+      "regex": {
+        "raw": {
+          "regex": "1=(a|b) (2=(b|c)+ )+d",
+          "transitions": {
+            "transitions": [
+              [
+                [
+                  2,
+                  3
+                ]
+              ],
+              [
+                [
+                  6,
+                  7
+                ],
+                [
+                  7,
+                  7
+                ]
+              ],
+              [
+                [
+                  8,
+                  9
+                ]
+              ]
+            ]
+          }
+        }
+      },
+      "with_bench": true,
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "1=a 2=b d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "d"
+          ],
+          "circom_testname": "case 1"
+        },
+        {
+          "input": "1=a 2=b 2=bc 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ],
+          "circom_testname": "case 2"
+        },
+        {
+          "input": "1=a 2=b 2=bc 2=c da 1=a 2=cb 2=c 2=b dd",
+          "expected_substrings": [
+            "a",
+            "b",
+            "bc",
+            "c", 
+            "d"
+          ],
+          "circom_testname": "case 3"
+        },
+        {
+          "input": "1=b 2=bb 2=bc d",
+          "expected_substrings": [
+            "b",
+            "bb",
+            "bc",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=bbbbbc d",
+          "expected_substrings": [
+            "a",
+            "bbbbbc",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=bbcb 2=c 2=bb d",
+          "expected_substrings": [
+            "b",
+            "bbcb",
+            "c",
+            "bb",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=bc d",
+          "expected_substrings": [
+            "a",
+            "bc",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=bb d",
+          "expected_substrings": [
+            "b",
+            "bb",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=b 2=b 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "b",
+            "c",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=c d",
+          "expected_substrings": [
+            "b",
+            "c",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=bb 2=ccc d",
+          "expected_substrings": [
+            "a",
+            "bb",
+            "ccc",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=b 2=c d",
+          "expected_substrings": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=bbbbbb d",
+          "expected_substrings": [
+            "b",
+            "bbbbbb",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=bbbbb 2=bc 2=c d",
+          "expected_substrings": [
+            "b",
+            "bbbbb",
+            "bc",
+            "c",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=b 2=ccc d",
+          "expected_substrings": [
+            "b",
+            "ccc",
+            "d"
+          ],
+          "circom_testname": ""
+        },
+        {
+          "input": "1=a 2=bc 2=bc 2=b d",
+          "expected_substrings": [
+            "a",
+            "bc",
+            "bc",
+            "b",
+            "d"
+          ],
+          "circom_testname": ""
+        }
+      ],
+      "samples_fail": [
+        "1=a 2=abc d",
+        "1=c 2=b d",
+        "1=a 2=bb ",
+        "1=a 2=bb 3=c d",
+        "1=b 2=abc d",
+        "1=a d",
+        "1=b 2= d",
+        "2=b 1=a d",
+        "1=a 2=cccx d",
+        "aaa",
+        "1=a2=cd",
+        "1=a 2=b"
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "asterisk1",
+      "regex": {
+        "decomposed":  [
+              {
+                  "is_public": false,
+                  "regex_def": "x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "a*"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "xb", 
+          "expected_substrings": [],
+          "circom_testname": "asterisk1 valid case 1"
+        },
+        { 
+          "input": "xab", 
+          "expected_substrings": ["a"],
+          "circom_testname": "asterisk1 valid case 2"
+        },
+        { 
+          "input": "xaab", 
+          "expected_substrings": ["aa"],
+          "circom_testname": "asterisk1 valid case 3"
+        },
+        { 
+          "input": "710xab98", 
+          "expected_substrings": ["a"],
+          "circom_testname": "asterisk1 valid case 4"
+        }
+      ],
+      "samples_fail": [
+        "xaaa",
+        "aaabx"
+      ],
+      "circom_testnames_fails": [
+        "asterisk1 invalid case 1",
+        "asterisk1 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "asterisk2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "b*"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "aaa", 
+          "expected_substrings": [],
+          "circom_testname": "asterisk2 valid case 1"
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["b"],
+          "circom_testname": "asterisk2 valid case 2"
+        },
+        { 
+          "input": "abbba", 
+          "expected_substrings": ["bbb"],
+          "circom_testname": "asterisk2 valid case 3"
+        },
+        { 
+          "input": "717abb9", 
+          "expected_substrings": ["bb"],
+          "circom_testname": "asterisk2 valid case 4"
+        }
+      ],
+      "samples_fail": [
+        "bbb",
+        "19bd7"
+      ],
+      "circom_testnames_fails": [
+        "asterisk1 invalid case 1",
+        "asterisk1 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "asterisk3",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(x|y)*"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": [],
+          "circom_testname": "asterisk3 valid case 1"
+        },
+        { 
+          "input": "xaxxyxby", 
+          "expected_substrings": ["xxyx"],
+          "circom_testname": "asterisk3 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "axyxyyyx",
+        "xyyxxyba"
+      ],
+      "circom_testnames_fails": ["asterisk3 invalid case 1", "asterisk3 invalid case 2"]
+    },
+    {
+      "circuit_name": "caret1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "^a"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "a", 
+          "expected_substrings": ["a"],
+          "circom_testname": "caret1 valid case 1"
+        },
+        { 
+          "input": "abnjknda", 
+          "expected_substrings": ["a"],
+          "circom_testname": "caret1 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "ba",
+        "bav"
+      ],
+      "circom_testnames_fails": [
+        "caret1 invalid case 1",
+        "caret1 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "caret2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "^(a|b|c)"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "abc", 
+          "expected_substrings": ["a"],
+          "circom_testname": "caret2 valid case 1"
+        },
+        { 
+          "input": "bca", 
+          "expected_substrings": ["b"],
+          "circom_testname": "caret2 valid case 2"
+        },
+        { 
+          "input": "cab", 
+          "expected_substrings": ["c"],
+          "circom_testname": "caret2 valid case 3"
+        }
+      ],
+      "samples_fail": [
+        "7abc9mna"
+      ],
+      "circom_testnames_fails": ["caret2 invalid case 1"]
+    },
+    {
+      "circuit_name": "caret3",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(^|a)"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "b+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "bb817267", 
+          "expected_substrings": ["bb"],
+          "circom_testname": "caret3 valid case 1"
+        },
+        { 
+          "input": "818abbb9", 
+          "expected_substrings": ["bbb"],
+          "circom_testname": "caret3 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "81b"
+      ],
+      "circom_testnames_fails": ["caret3 invalid case 1"]
+    },
+    {
+      "circuit_name": "caret4",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(a|b)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "xabaaabb", 
+          "expected_substrings": ["abaaabb"],
+          "circom_testname": "caret4 valid case 1"
+        },
+        { 
+          "input": "xbaab82a", 
+          "expected_substrings": ["baab"],
+          "circom_testname": "caret4 valid case 2"
+        },
+        { 
+          "input": "7w1\nxabb", 
+          "expected_substrings": ["abb"],
+          "circom_testname": "caret4 valid case 3"
+        },
+        { 
+          "input": "7w\nxbbb9", 
+          "expected_substrings": ["bbb"],
+          "circom_testname": "caret4 valid case 4"
+        }
+      ],
+      "samples_fail": [
+        "7w1nxaba",
+        "abba\nx"
+      ],
+      "circom_testnames_fails": [
+        "caret4 invalid case 1",
+        "caret4 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "caret5",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "[^abc]+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "xdefabc1", 
+          "expected_substrings": ["def"],
+          "circom_testname": "caret5 valid case 1"
+        },
+        { 
+          "input": "9\nx9eabc", 
+          "expected_substrings": ["9e"],
+          "circom_testname": "caret5 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "xabc",
+        "1\ndef",
+        "a8abc8",
+        "71\na81ma"
+      ],
+      "circom_testnames_fails": [
+        "caret5 invalid case 1",
+        "caret5 invalid case 2",
+        "caret5 invalid case 3",
+        "caret5 invalid case 4"
+    ]
+    },
+    {
+      "circuit_name": "dollar1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a[bc]$"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["ab"],
+          "circom_testname": "dollar1 valid case 1"
+        }
+      ],
+      "samples_fail": [
+        "abg",
+        "18abcg"
+      ],
+      "circom_testnames_fails": ["dollar1 invalid case 1"]
+    },
+    {
+      "circuit_name": "dollar2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "(\\n|^)x"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "a[bc]$"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "xab", 
+          "expected_substrings": ["ab"],
+          "circom_testname": "dollar2 valid case 1"
+        },
+        { 
+          "input": "ak\nxab", 
+          "expected_substrings": ["ab"],
+          "circom_testname": "dollar2 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "abg", 
+        "\nabg"
+      ],
+      "circom_testnames_fails": [
+        "dollar2 invalid case 1",
+        "dollar2 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "dot1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "."
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "a", 
+          "expected_substrings": ["a"],
+          "circom_testname": "dot1 valid case 1"
+        }
+      ],
+      "samples_fail": [
+        ""
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "dot2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "."
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "a6b", 
+          "expected_substrings": ["6"],
+          "circom_testname": "dot2 valid case 1"
+        }
+      ],
+      "samples_fail": [
+        "819nc8b8",
+        "78aa6cc8"
+      ],
+      "circom_testnames_fails": [
+        "dot2 invalid case 1",
+        "dot2 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "international_chars_decomposed",
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": "Latin-Extension="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[¡-ƿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Greek="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[Ͱ-Ͽ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Cyrillic="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[Ѐ-ӿ]+"
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "Latin-Extension=Ʃƣƙ Greek=ϕω Cyrillic=иЩ Arabic=أبت Devanagari=आदित्य Hiragana&Katakana=なツ",
+          "expected_substrings": ["Ʃƣƙ", "ϕω", "иЩ"],
+          "circom_testname": "case 1"
+        }
+      ],
+      "samples_fail": [
+        "A",
+        "Z",
+        "1"
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "international_chars_decomposed",
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": " Arabic="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[؀-ۿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Devanagari="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[ऀ-ॿ]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": " Hiragana&Katakana="
+            },
+            {
+              "is_public": true,
+              "regex_def": "[ぁ-ヿ]+"
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "Latin-Extension=Ʃƣƙ Greek=ϕω Cyrillic=иЩ Arabic=أبت Devanagari=आदित्य Hiragana&Katakana=なツ",
+          "expected_substrings": ["أبت", "आदित्य", "なツ"],
+          "circom_testname": "case 1"
+        }
+      ],
+      "samples_fail": [
+        "A",
+        "Z",
+        "1"
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "invitation_code_with_prefix",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "( )?(c|C)ode( )?(0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "Re: Accept guardian request for 0x04884491560f38342C56E26BDD0fEAbb68E2d2FC Code 01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76",
+          "expected_substrings": [" Code 01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76"],
+          "circom_testname": "case 1"
+        }
+      ],
+      "samples_fail": [
+        "codex",
+        "Cod12G"
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "negate1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a:"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "[^abcdefghijklmnopqrstuvwxyz\\.]+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "\\."
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "a: ABCDEFG XYZ.",
+          "expected_substrings": [" ABCDEFG XYZ"],
+          "circom_testname": "case 1 with regex 1"
+        },
+        { 
+          "input": "a: CRIPTOGRAFíA.",
+          "expected_substrings": [" CRIPTOGRAFíA"],
+          "circom_testname": "case 2 with regex 1"
+        },
+        { 
+          "input": "a: あいう.",
+          "expected_substrings": [" あいう"],
+          "circom_testname": "case 3 with regex 1"
+        },
+        { 
+          "input": "a: التشفير.",
+          "expected_substrings": [" التشفير"],
+          "circom_testname": "case 4 with regex 1"
+        }
+      ],
+      "samples_fail": [
+        "a:abc.",
+        "a:xyz."
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "negate2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "[^ab]"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "abdefia",
+          "expected_substrings": ["d"],
+          "circom_testname": "case 1 with regex 2"
+        }
+      ],
+      "samples_fail": [
+        "a"
+      ],
+      "circom_testnames_fails": ["invalid case 1 with regex 2"]
+    },
+    {
+      "circuit_name": "plus1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["a"],
+          "circom_testname": "plus1 valid case 1"
+        },
+        { 
+          "input": "aaaab", 
+          "expected_substrings": ["aaaa"],
+          "circom_testname": "plus1 valid case 2"
+        },
+        { 
+          "input": "7aab89ac", 
+          "expected_substrings": ["aa"],
+          "circom_testname": "plus1 valid case 3"
+        }
+      ],
+      "samples_fail": [
+        "b",
+        "aacaadae",
+        "aaaaaaaa"
+      ],
+      "circom_testnames_fails": [
+        "plus1 invalid case 1",
+        "plus1 invalid case 2",
+        "plus1 invalid case 3"
+      ]
+    },
+    {
+      "circuit_name": "plus2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(b|c)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "ab", 
+          "expected_substrings": ["b"],
+          "circom_testname": "plus2 valid case 1"
+        },
+        { 
+          "input": "ac", 
+          "expected_substrings": ["c"],
+          "circom_testname": "plus2 valid case 2"
+        },
+        { 
+          "input": "abccbbcc", 
+          "expected_substrings": ["bccbbcc"],
+          "circom_testname": "plus2 valid case 3"
+        },
+        { 
+          "input": "7abbcaa", 
+          "expected_substrings": ["bbc"],
+          "circom_testname": "plus2 valid case 4"
+        }
+      ],
+      "samples_fail": [
+        "adefghij"
+      ],
+      "circom_testnames_fails": ["plus2 invalid case 1"]
+    },
+    {
+      "circuit_name": "plus3",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "a"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(bc)+"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "abcbcbc", 
+          "expected_substrings": ["bcbcbc"],
+          "circom_testname": "plus3 valid case 1"
+        },
+        { 
+          "input": "acbabcbc", 
+          "expected_substrings": ["bcbc"],
+          "circom_testname": "plus3 valid case 2"
+        },
+        { 
+          "input": "abccbcbb", 
+          "expected_substrings": ["bc"],
+          "circom_testname": "plus3 valid case 3"
+        }
+      ],
+      "samples_fail": [
+        "abab"
+      ],
+      "circom_testnames_fails": ["plus3 invalid case 1"]
+    },
+    {
+      "circuit_name": "plus4",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "(12|345)+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "1234512b", 
+          "expected_substrings": ["1234512"],
+          "circom_testname": "plus4 valid case 1"
+        },
+        { 
+          "input": "2134512b", 
+          "expected_substrings": ["34512"],
+          "circom_testname": "plus4 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "1234b",
+        "34512"
+      ],
+      "circom_testnames_fails": [
+        "plus4 invalid case 1",
+        "plus4 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "question1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a?"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "b", 
+          "expected_substrings": [],
+          "circom_testname": "question1 valid case 1"
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["a"],
+          "circom_testname": "question1 valid case 2"
+        },
+        { 
+          "input": "199aabb", 
+          "expected_substrings": ["a"],
+          "circom_testname": "question1 valid case 3"
+        }
+      ],
+      "samples_fail": [
+        "aaaaaaaa",
+        "cccccccc"
+      ],
+      "circom_testnames_fails": [
+        "question1 invalid case 1",
+        "question1 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "question2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "(1x?2)+"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "b"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "12b", 
+          "expected_substrings": ["12"],
+          "circom_testname": "question2 valid case 1"
+        },
+        { 
+          "input": "11x2bb", 
+          "expected_substrings": ["1x2"],
+          "circom_testname": "question2 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "1x2",
+        "1xb"
+      ],
+      "circom_testnames_fails": [
+        "question2 invalid case 1",
+        "question2 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "question3",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": false,
+                  "regex_def": "12"
+              },
+              {
+                  "is_public": true,
+                  "regex_def": "(a|b)?"
+              },
+              {
+                  "is_public": false,
+                  "regex_def": "c"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "12c", 
+          "expected_substrings": [],
+          "circom_testname": "question3 valid case 1"
+        },
+        { 
+          "input": "12ac", 
+          "expected_substrings": ["a"],
+          "circom_testname": "question3 valid case 2"
+        },
+        { 
+          "input": "12bc", 
+          "expected_substrings": ["b"],
+          "circom_testname": "question3 valid case 2 (should be 3)"
+        },
+        { 
+          "input": "12a12bc1", 
+          "expected_substrings": ["b"],
+          "circom_testname": "question3 valid case 4"
+        }
+      ],
+      "samples_fail": [
+        "1ac",
+        "12abc",
+        "12a12b"
+      ],
+      "circom_testnames_fails": [
+        "question3 invalid case 1",
+        "question3 invalid case 2",
+        "question3 invalid case 3"
+      ]
+    },
+    {
+      "circuit_name": "reveal_check1",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "aba"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "aba", 
+          "expected_substrings": ["aba"],
+          "circom_testname": "reveal check1 valid case 1"
+        },
+        { 
+          "input": "7abaab9", 
+          "expected_substrings": ["aba"],
+          "circom_testname": "reveal check1 valid case 2"
+        }
+      ],
+      "samples_fail": [
+        "aca",
+        "aaa"
+      ],
+      "circom_testnames_fails": [
+        "reveal check1 invalid case 1",
+        "reveal check1 invalid case 2"
+      ]
+    },
+    {
+      "circuit_name": "reveal_check2",
+      "regex": {
+        "decomposed": [
+              {
+                  "is_public": true,
+                  "regex_def": "a[ab]"
+              }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "aa", 
+          "expected_substrings": ["aa"],
+          "circom_testname": "reveal check2 valid case 1"
+        },
+        { 
+          "input": "ab", 
+          "expected_substrings": ["ab"],
+          "circom_testname": "reveal check2 valid case 2"
+        },
+        { 
+          "input": "aba", 
+          "expected_substrings": ["ab"],
+          "circom_testname": "reveal check2 valid case 3"
+        }
+      ],
+      "samples_fail": [
+        "ac",
+        "bad"
+      ],
+      "circom_testnames_fails": [
+        "reveal check2 invalid case 1",
+        "reveal check2 invalid case 2",
+        "reveal check2 invalid case 3"
+      ]
+    },
+    {
+      "circuit_name": "simple_regex_decomposed",
+      "regex": {
+        "decomposed": [
+            {
+              "is_public": false,
+              "regex_def": "email was meant for @"
+            },
+            {
+              "is_public": true,
+              "regex_def": "[a-zA-Z0-9_]+"
+            },
+            {
+              "is_public": false,
+              "regex_def": "\\."
+            }
+          ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        { 
+          "input": "email was meant for @zkRegex.", 
+          "expected_substrings": ["zkRegex"],
+          "circom_testname": "case 1"
+        }
+      ],
+      "samples_fail": [
+        "email was meant for @."
+      ],
+      "circom_testnames_fails": [""]
+    },
+    {
+      "circuit_name": "email_addr",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./@]+@[A-Za-z0-9.\\-]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"],
+          "circom_testname": "only an email address"
+        },
+        {
+          "input": "subject:suegamisora@gmail.com",
+          "expected_substrings": ["suegamisora@gmail.com"],
+          "circom_testname": "with a prefix"
+        },
+        {
+          "input": "subject:suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["suegamisora@gmail.com@dummy.com"],
+          "circom_testname": "@ inside the name part"
+        },
+        {
+          "input": "subject:@gmail.com@dummy.com",
+          "expected_substrings": ["@gmail.com@dummy.com"],
+          "circom_testname": "starts from @"
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "circuit_name": "email_domain",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "[A-Za-z0-9!#$%&'*+=?\\-\\^_`{|}~./]+@"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[A-Za-z0-9.\\-@]+"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "suegamisora@gmail.com",
+          "expected_substrings": ["gmail.com"],
+          "circom_testname": "test a regex of an email domain"
+        },
+        {
+          "input": "suegamisora@gmail.com@dummy.com",
+          "expected_substrings": ["gmail.com@dummy.com"],
+          "circom_testname": "@ inside the name part"
+        },
+        {
+          "input": "@gmail.com@dummy.com",
+          "expected_substrings": ["dummy.com"],
+          "circom_testname": "starts from @"
+        }
+      ],
+      "samples_fail": []
+    },
+    {
+      "circuit_name": "message_id",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)message-id:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "<[A-Za-z0-9=@\\.\\+_-]+>"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"],
+          "circom_testname": "message id from beginning"
+        },
+        {
+          "input": "dummy\r\nmessage-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n",
+          "expected_substrings": ["<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>"],
+          "circom_testname": "message id after new line"
+        }
+      ],
+      "samples_fail": ["to:message-id:<CAJ7Y6jdOGRFj4RbA=JU034DwHUnRapUZzqLN4hGkG3ou23dFbw@mail.gmail.com>\r\n"],
+      "circom_testnames_fails": ["invalid message id"]
+    },
+    {
+      "circuit_name": "subject_all",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)subject:"
+          },
+          {
+            "is_public": true,
+            "regex_def": "[^\\r\\n]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": "\\r\\n"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "subject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."],
+          "circom_testname": "subject from beginning"
+        },
+        {
+          "input": "dummy\r\nsubject:This is a test.\r\n",
+          "expected_substrings": ["This is a test."],
+          "circom_testname": "subject after new line"
+        },
+        {
+          "input": "subject:これはテストです。\r\n",
+          "expected_substrings": ["これはテストです。"],
+          "circom_testname": "subject from beginning and non-English case"
+        }
+      ],
+      "samples_fail": [
+        "\r\nto:subject:This is a subject in To field.\r\n",
+        "\u00FF\u0031subject:This is a subject in To field.\r\n"
+      ],
+      "circom_testnames_fails": [
+        "subject in the invalid field",
+        "invalid subject field with 255"
+      ]
+    },
+    {
+      "circuit_name": "timestamp",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+t="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[0-9]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"],
+          "circom_testname": "timestamp in the header"
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["1694989812"],
+          "circom_testname": "timestamp after new line"
+        }
+      ],
+      "samples_fail": ["to:dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="],
+      "circom_testnames_fails": ["invalid timestamp"]
+    },
+    {
+      "circuit_name": "body_hash",
+      "regex": {
+        "decomposed": [
+          {
+            "is_public": false,
+            "regex_def": "(\\r\\n|^)dkim-signature:"
+          },
+          {
+            "is_public": false,
+            "regex_def": "([a-z]+=[^;]+; )+bh="
+          },
+          {
+            "is_public": true,
+            "regex_def": "[a-zA-Z0-9+/=]+"
+          },
+          {
+            "is_public": false,
+            "regex_def": ";"
+          }
+        ]
+      },
+      "gen_substrs": true,
+      "input_size": 1024,
+      "samples_pass": [
+        {
+          "input": "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="],
+          "circom_testname": "bodyhash in the header"
+        },
+        {
+          "input": "\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+          "expected_substrings": ["BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs="],
+          "circom_testname": "bodyhash after new line"
+        }
+      ],
+      "samples_fail": [
+        "\r\nto: dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b=",
+        "\u00FF\u0031dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; t=1694989812; x=1695594612; dara=google.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject :date:message-id:reply-to; bh=BWETwQ9JDReS4GyR2v2TTR8Bpzj9ayumsWQJ3q7vehs=; b="
+    ],
+      "circom_testnames_fails": [
+        "bodyhash in the invalid field",
+        "invalid bodyhash with 255"
+    ]
     }
   ]
 }

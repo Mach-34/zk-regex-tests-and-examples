@@ -110,19 +110,21 @@ impl Code {
                   // Input for regex match\n\
                   let input = {:?};\n\
                   // This should contain {} substrings\n\
-                  let res = regex_match(input);\n\
-                  assert(res.len() == {});\n",
+                  let capture_sequences = regex_match(input);\n\
+                  assert(capture_sequences.len() == {});\n\
+                  let substrings = extract_all_substrings::<_, _, {}>(input, capture_sequences);",
                     self.noir_code,  // Noir code part of `Code`
                     self.input_size, // Input size for the main function
                     input_byte_array.as_bytes(), // Byte array input for the regex
                     expected_substrings.len(),   // Number of expected substrings
-                    expected_substrings.len()    // Assertion: number of substrings
+                    expected_substrings.len(),    // Assertion: number of substrings
+                    self.input_size // Input size reused for max substring length (just inefficient, not insecure)
                 )
                 .unwrap();
 
                 // Iterate over expected substrings and generate assertions
                 for (i, substr) in expected_substrings.iter().enumerate() {
-                    writeln!(s, "let substr{} = res.get({});", i, i).unwrap();
+                    writeln!(s, "let substr{} = substrings.get({});", i, i).unwrap();
                     for (j, byte) in substr.bytes().enumerate() {
                         writeln!(s, "assert(substr{}.get({}) == {});", i, j, byte).unwrap();
                     }

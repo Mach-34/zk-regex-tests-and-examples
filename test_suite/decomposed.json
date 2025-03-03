@@ -1,1 +1,1 @@
-{"parts":[{"is_public":false,"regex_def":"(\\r\\n|^)subject:"},{"is_public":true,"regex_def":"[^\\r\\n]+"},{"is_public":false,"regex_def":"\\r\\n"}]}
+{"parts":[{"is_public":false,"regex_def":"(\\r\\n|^)dkim-signature:"},{"is_public":false,"regex_def":"([a-z]+=[^;]+; )+bh="},{"is_public":true,"regex_def":"[a-zA-Z0-9+/=]+"},{"is_public":false,"regex_def":";"}]}
